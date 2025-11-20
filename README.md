@@ -79,6 +79,17 @@ graph TD
 3.  **Build & Run**
     Select `app` configuration and run on an emulator or physical device.
 
+## 📥 Distribution & Downloads
+
+The dev team is actively working on making Cypherchat accessible to everyone. We plan to distribute official, signed APKs through multiple resilient channels:
+
+-   **🌐 Official Website**: Direct download for maximum accessibility.
+-   **🤖 F-Droid**: Fully verifiable, open-source builds.
+-   **💬 Telegram Channel**: Get the latest binaries directly in your messenger.
+-   **🎮 Discord Server**: Community-driven distribution and support.
+
+*Note: Always verify the SHA-256 checksum provided on our official website before installing.*
+
 ## 🔐 Security Philosophy
 
 1.  **Trust No One**: We assume the network is compromised.
@@ -87,7 +98,7 @@ graph TD
 
 ## 🤝 Contributing
 
-We welcome fellow cypherpunks!
+Security is a community effort. We welcome audits, pull requests, and bug reports.
 
 1.  Fork the repo.
 2.  Create your feature branch (`git checkout -b feature/amazing-feature`).
