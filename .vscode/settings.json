@@ -1,0 +1,68 @@
+{
+  // ===========================
+  // GitLab Workflow Configuration
+  // ===========================
+  "gitlab.instanceUrl": "https://gitlab.com",
+  "gitlab.showPipelineUpdateNotifications": true,
+  "gitlab.showIssueLinkOnStatusBar": true,
+  "gitlab.showMrStatusOnStatusBar": true,
+  "gitlab.pipelineGitRemoteName": "origin",
+  "gitlab.remoteName": "origin",
+  "gitlab.enableExperimentalFeatures": false,
+  // Show issues/MRs in sidebar
+  "gitlab.showProjectMergeRequests": true,
+  "gitlab.showProjectIssues": true,
+  // Auto-fetch pipeline status
+  "gitlab.autoRefreshPipeline": true,
+  // ===========================
+  // Kotlin/Android Settings
+  // ===========================
+  "kotlin.languageServer.enabled": true,
+  "kotlin.compiler.warn.unusedImports": true,
+  // ===========================
+  // Editor Settings (Security-focused)
+  // ===========================
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "editor.rulers": [
+    120
+  ],
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  // ===========================
+  // File Exclusions (Keep secrets out of search)
+  // ===========================
+  "files.exclude": {
+    "**/.gradle": true,
+    "**/.idea": true,
+    "**/build": true,
+    "**/*.iml": true,
+    "**/local.properties": true,
+    "**/.keystore": true,
+    "**/*.jks": true
+  },
+  "search.exclude": {
+    "**/build": true,
+    "**/.gradle": true,
+    "**/node_modules": true
+  },
+  // ===========================
+  // Git Settings
+  // ===========================
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  "git.postCommitCommand": "none",
+  // ===========================
+  // Security: Prevent accidental commits
+  // ===========================
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/.gradle/**": true
+  },
+  "gitlab.real-timeSecurityScan.enabled": true
+}

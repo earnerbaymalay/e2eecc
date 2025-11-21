@@ -1,0 +1,66 @@
+# ===========================
+# Android / Gradle
+# ===========================
+*.iml
+.gradle
+/local.properties
+/.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+
+# ===========================
+# Keystore (NEVER COMMIT)
+# ===========================
+*.jks
+*.keystore
+keystore.properties
+
+# ===========================
+# Logs
+# ===========================
+*.log
+
+# ===========================
+# SQLCipher / Database
+# ===========================
+*.db
+*.db-shm
+*.db-wal
+
+# ===========================
+# Secrets / Environment
+# ===========================
+.env
+.env.local
+secrets.properties
+
+# ===========================
+# IDE
+# ===========================
+.vscode/launch.json
+.vscode/tasks.json
+.vscode/*.code-workspace
+
+# ===========================
+# GitLab CI Cache
+# ===========================
+.gitlab-ci-cache/
+
+# ===========================
+# Dependency Check Reports
+# ===========================
+dependency-check-report/
+
+# ===========================
+# Secrets Baseline (Keep this)
+# ===========================
+# .secrets.baseline should be committed
+
