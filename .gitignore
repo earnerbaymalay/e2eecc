@@ -15,6 +15,8 @@
 *.ap_
 *.dex
 *.class
+gradle-*-bin/
+gradle-*-bin.zip
 
 # ===========================
 # Keystore (NEVER COMMIT)
