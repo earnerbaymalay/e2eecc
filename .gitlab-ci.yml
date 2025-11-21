@@ -1,0 +1,201 @@
+# ===========================
+# Cypherchat GitLab CI/CD Pipeline
+# Zero-Knowledge Messaging App
+# ===========================
+
+stages:
+  - security
+  - build
+  - test
+  - deploy
+
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.caching=true"
+  ANDROID_COMPILE_SDK: "34"
+  ANDROID_BUILD_TOOLS: "34.0.0"
+  # Disable Gradle welcome message and reduce noise
+  GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
+
+# ===========================
+# Security Checks (First Line of Defense)
+# ===========================
+secret_detection:
+  stage: security
+  image: python:3.11-slim
+  before_script:
+    - pip install detect-secrets
+  script:
+    - detect-secrets scan --all-files --force-use-all-plugins --baseline .secrets.baseline
+  allow_failure: false
+  only:
+    - merge_requests
+    - main
+    - develop
+
+dependency_check:
+  stage: security
+  image: openjdk:17-jdk-slim
+  before_script:
+    - apt-get update && apt-get install -y wget unzip
+    - wget https://github.com/jeremylong/DependencyCheck/releases/download/v9.0.0/dependency-check-9.0.0-release.zip
+    - unzip dependency-check-9.0.0-release.zip
+  script:
+    - ./dependency-check/bin/dependency-check.sh --project "Cypherchat" --scan . --format HTML --out dependency-check-report
+  artifacts:
+    paths:
+      - dependency-check-report/
+    expire_in: 1 week
+  only:
+    - schedules
+    - main
+
+# ===========================
+# Build Stage
+# ===========================
+build_debug:
+  stage: build
+  image: openjdk:17-jdk
+  before_script:
+    - apt-get update && apt-get install -y wget unzip
+    - wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+    - mkdir -p android-sdk/cmdline-tools
+    - unzip commandlinetools-linux-9477386_latest.zip -d android-sdk/cmdline-tools
+    - mv android-sdk/cmdline-tools/cmdline-tools android-sdk/cmdline-tools/latest
+    - export ANDROID_HOME=$PWD/android-sdk
+    - export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
+    - yes | sdkmanager --licenses || true
+    - sdkmanager "platform-tools" "platforms;android-${ANDROID_COMPILE_SDK}" "build-tools;${ANDROID_BUILD_TOOLS}"
+  script:
+    - chmod +x ./gradlew
+    - ./gradlew assembleDebug --stacktrace
+  artifacts:
+    paths:
+      - app/build/outputs/apk/debug/*.apk
+    expire_in: 1 week
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .gradle/
+      - build/
+  only:
+    - merge_requests
+    - develop
+    - main
+
+build_release:
+  stage: build
+  image: openjdk:17-jdk
+  before_script:
+    - apt-get update && apt-get install -y wget unzip
+    - wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+    - mkdir -p android-sdk/cmdline-tools
+    - unzip commandlinetools-linux-9477386_latest.zip -d android-sdk/cmdline-tools
+    - mv android-sdk/cmdline-tools/cmdline-tools android-sdk/cmdline-tools/latest
+    - export ANDROID_HOME=$PWD/android-sdk
+    - export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
+    - yes | sdkmanager --licenses || true
+    - sdkmanager "platform-tools" "platforms;android-${ANDROID_COMPILE_SDK}" "build-tools;${ANDROID_BUILD_TOOLS}"
+  script:
+    - chmod +x ./gradlew
+    - ./gradlew assembleRelease --stacktrace
+  artifacts:
+    paths:
+      - app/build/outputs/apk/release/*.apk
+      - app/build/outputs/bundle/release/*.aab
+    expire_in: 30 days
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .gradle/
+      - build/
+  only:
+    - main
+    - tags
+
+# ===========================
+# Test Stage
+# ===========================
+unit_tests:
+  stage: test
+  image: openjdk:17-jdk
+  before_script:
+    - apt-get update && apt-get install -y wget unzip
+    - wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+    - mkdir -p android-sdk/cmdline-tools
+    - unzip commandlinetools-linux-9477386_latest.zip -d android-sdk/cmdline-tools
+    - mv android-sdk/cmdline-tools/cmdline-tools android-sdk/cmdline-tools/latest
+    - export ANDROID_HOME=$PWD/android-sdk
+    - export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
+    - yes | sdkmanager --licenses || true
+    - sdkmanager "platform-tools" "platforms;android-${ANDROID_COMPILE_SDK}" "build-tools;${ANDROID_BUILD_TOOLS}"
+  script:
+    - chmod +x ./gradlew
+    - ./gradlew test --stacktrace
+  artifacts:
+    reports:
+      junit: "**/build/test-results/test/TEST-*.xml"
+    paths:
+      - "**/build/reports/tests/"
+    expire_in: 1 week
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .gradle/
+  only:
+    - merge_requests
+    - develop
+    - main
+
+lint_check:
+  stage: test
+  image: openjdk:17-jdk
+  before_script:
+    - apt-get update && apt-get install -y wget unzip
+    - wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+    - mkdir -p android-sdk/cmdline-tools
+    - unzip commandlinetools-linux-9477386_latest.zip -d android-sdk/cmdline-tools
+    - mv android-sdk/cmdline-tools/cmdline-tools android-sdk/cmdline-tools/latest
+    - export ANDROID_HOME=$PWD/android-sdk
+    - export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
+    - yes | sdkmanager --licenses || true
+    - sdkmanager "platform-tools" "platforms;android-${ANDROID_COMPILE_SDK}" "build-tools;${ANDROID_BUILD_TOOLS}"
+  script:
+    - chmod +x ./gradlew
+    - ./gradlew lint --stacktrace
+  artifacts:
+    paths:
+      - "**/build/reports/lint-results*.html"
+    expire_in: 1 week
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .gradle/
+  allow_failure: true
+  only:
+    - merge_requests
+    - develop
+    - main
+
+# ===========================
+# Deploy Stage (Manual Trigger)
+# ===========================
+deploy_internal:
+  stage: deploy
+  image: openjdk:17-jdk
+  script:
+    - echo "Deploy to internal testing track (Firebase App Distribution, etc.)"
+    - echo "Add your deployment script here"
+  when: manual
+  only:
+    - main
+
+deploy_production:
+  stage: deploy
+  image: openjdk:17-jdk
+  script:
+    - echo "Deploy to Google Play Store (production track)"
+    - echo "Add your deployment script here"
+  when: manual
+  only:
+    - tags
+
