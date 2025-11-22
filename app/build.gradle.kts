@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.cypherchat"
-    compileSdk = libs.versions.build.compileSdk.get().toInt()
+    compileSdk = libs.versions.build.compile.sdk.get().toInt()
 
     defaultConfig {
         applicationId = "com.cypherchat"
-        minSdk = libs.versions.build.minSdk.get().toInt()
-        targetSdk = libs.versions.build.targetSdk.get().toInt()
+        minSdk = libs.versions.build.min.sdk.get().toInt()
+        targetSdk = libs.versions.build.target.sdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
 
@@ -61,7 +61,7 @@ dependencies {
     
     // Compose
     implementation(libs.androidx.activity.compose)
-    implementation(platform("androidx.compose:compose-bom:${libs.versions.compose.get()}"))
+    implementation(platform("androidx.compose:compose-bom:${libs.versions.composeBom.get()}"))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
@@ -85,7 +85,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit.ext)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform("androidx.compose:compose-bom:${libs.versions.compose.get()}"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:${libs.versions.composeBom.get()}"))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
