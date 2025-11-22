@@ -1,12 +1,12 @@
 # Cypherchat Development Roadmap
 
-**Status**: Early Alpha (Foundation Phase)  
-**Last Updated**: November 21, 2025  
+**Status**: Early Alpha (Foundation Phase)
+**Last Updated**: November 21, 2025
 **Target GA**: Q2-Q3 2026
 
 ---
 
-## 🎯 Strategic Goals
+## ðŸŽ¯ Strategic Goals
 
 1. **Zero-Knowledge Architecture**: Complete end-to-end encryption pipeline with no central server involvement
 2. **Hardware-Backed Security**: All long-term secrets in Android Keystore with SQLCipher at-rest encryption
@@ -16,7 +16,7 @@
 
 ---
 
-## 📋 Phase 1: Foundation (Current - December 2025)
+## ðŸ“‹ Phase 1: Foundation (Current - December 2025)
 
 **Goal**: Establish project structure, CI/CD, and base security infrastructure
 
@@ -63,7 +63,7 @@
 
 ---
 
-## 📋 Phase 2: Authentication & Transport (January-February 2026)
+## ðŸ“‹ Phase 2: Authentication & Transport (January-February 2026)
 
 **Goal**: Establish secure user identity and message transport
 
@@ -96,7 +96,7 @@
 
 ---
 
-## 📋 Phase 3: Core Messaging (March-April 2026)
+## ðŸ“‹ Phase 3: Core Messaging (March-April 2026)
 
 **Goal**: Functional end-to-end encrypted messaging with contact management
 
@@ -131,7 +131,7 @@
 
 ---
 
-## 📋 Phase 4: Advanced Features (May-June 2026)
+## ðŸ“‹ Phase 4: Advanced Features (May-June 2026)
 
 **Goal**: Rich messaging and data management capabilities
 
@@ -175,7 +175,7 @@
 
 ---
 
-## 📋 Phase 5: Security Hardening & Testing (July-August 2026)
+## ðŸ“‹ Phase 5: Security Hardening & Testing (July-August 2026)
 
 **Goal**: Production-grade security audit and comprehensive testing
 
@@ -203,7 +203,7 @@
 
 ---
 
-## 📋 Phase 6: Distribution & Release (September 2026)
+## ðŸ“‹ Phase 6: Distribution & Release (September 2026)
 
 **Goal**: Public beta and eventual stable release
 
@@ -231,7 +231,7 @@
 
 ---
 
-## 🚀 Future Enhancements (Post-1.0)
+## ðŸš€ Future Enhancements (Post-1.0)
 
 ### Messaging UX
 
@@ -263,17 +263,17 @@
 
 ---
 
-## 🔐 Security Priorities Throughout All Phases
+## ðŸ” Security Priorities Throughout All Phases
 
-- ✅ **Memory Safety**: Overwrite sensitive data after use in every phase
-- ✅ **No Logging**: Sanitize all logging; never log PII or cryptographic material
-- ✅ **Secure Dependencies**: Pin exact versions; evaluate every new library
-- ✅ **Code Review**: All PRs reviewed by security-cleared maintainers
-- ✅ **Threat Modeling**: Revisit threat model quarterly as features evolve
+- âœ… **Memory Safety**: Overwrite sensitive data after use in every phase
+- âœ… **No Logging**: Sanitize all logging; never log PII or cryptographic material
+- âœ… **Secure Dependencies**: Pin exact versions; evaluate every new library
+- âœ… **Code Review**: All PRs reviewed by security-cleared maintainers
+- âœ… **Threat Modeling**: Revisit threat model quarterly as features evolve
 
 ---
 
-## 📊 Key Metrics & Success Criteria
+## ðŸ“Š Key Metrics & Success Criteria
 
 | Phase | Metric | Target |
 |-------|--------|--------|
@@ -286,7 +286,7 @@
 
 ---
 
-## 🤝 Community Involvement
+## ðŸ¤ Community Involvement
 
 - **Phase 1-2**: Closed core team (security-critical foundation)
 - **Phase 3-4**: Limited beta (selected security researchers)
@@ -295,7 +295,7 @@
 
 ---
 
-## 📞 Feedback & Adjustments
+## ðŸ“ž Feedback & Adjustments
 
 This roadmap is **living** and subject to change based on:
 
@@ -308,5 +308,5 @@ File issues or discussions on GitHub to propose changes.
 
 ---
 
-**Built with ❤️ and 🔐 by the Cypherchat Team**
+**Built with â¤ï¸ and ðŸ” by the Cypherchat Team**
 

@@ -21,9 +21,9 @@
 <!-- As a [type of user], I want [goal] so that [benefit] -->
 
 ### Acceptance Criteria
-- [ ] 
-- [ ] 
-- [ ] 
+- [ ]
+- [ ]
+- [ ]
 
 ### Mockups/Wireframes
 <!-- Attach designs if applicable -->

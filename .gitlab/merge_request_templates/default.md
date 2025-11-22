@@ -7,9 +7,9 @@
 <!-- Link to related issues: Closes #123, Relates to #456 -->
 
 ### Changes Made
-- 
-- 
-- 
+-
+-
+-
 
 ### Security Checklist
 - [ ] No sensitive data logged to Logcat
@@ -47,6 +47,6 @@
 <!-- Any migration steps, database changes, or config updates? -->
 
 ---
-**Assignee**: @<!-- mention reviewer -->  
+**Assignee**: @<!-- mention reviewer -->
 **Labels**: `needs-review`
 

@@ -5,10 +5,10 @@ plugins {
 
 android {
     namespace = "com.cypherchat.core.common"
-    compileSdk = libs.versions.build.compileSdk.get().toInt()
+    compileSdk = libs.versions.build.compile.sdk.get().toInt()
 
     defaultConfig {
-        minSdk = libs.versions.build.minSdk.get().toInt()
+        minSdk = libs.versions.build.min.sdk.get().toInt()
         
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
