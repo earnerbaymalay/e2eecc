@@ -16,12 +16,11 @@ class MainActivity : ComponentActivity() {
             CypherchatTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color    = MaterialTheme.colorScheme.background
                 ) {
-                    // TODO: Add main UI content
+                    CypherchatNavigation()
                 }
             }
         }
     }
 }
-

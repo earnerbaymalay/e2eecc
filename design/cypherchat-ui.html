@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Cypherchat</title>
+  <!--
+    Fonts: Barlow (clean, condensed, technical) + IBM Plex Mono (keys/fingerprints)
+    Self-host for offline use: https://fontsource.org/fonts/barlow
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ═══════════════════════════════════════════════
+       DESIGN TOKENS
+    ═══════════════════════════════════════════════ */
+    :root {
+      --black:      #07090f;
+      --navy:       #0d1117;
+      --surface:    #161b27;
+      --card:       #1e2535;
+      --border:     #2a3145;
+      --border-sub: rgba(42,49,69,0.5);
+
+      --teal:       #00d4aa;
+      --teal-dim:   #008f72;
+      --teal-soft:  rgba(0,212,170,0.12);
+      --teal-glow:  rgba(0,212,170,0.06);
+
+      --amber:      #ffa500;
+      --red:        #ff4757;
+      --green:      #2ed573;
+
+      --text-hi:    #e8eaf0;
+      --text-mid:   #8b93a8;
+      --text-lo:    #4a5268;
+
+      --bubble-out: #003d2e;
+      --bubble-in:  #1e2535;
+
+      --font-ui:    'Barlow', system-ui, sans-serif;
+      --font-mono:  'IBM Plex Mono', 'Courier New', monospace;
+    }
+
+    /* ═══════════════════════════════════════════════
+       RESET
+    ═══════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    button { cursor: pointer; font-family: inherit; background: none; border: none; }
+    textarea, input { font-family: inherit; }
+
+    /* ═══════════════════════════════════════════════
+       BASE
+    ═══════════════════════════════════════════════ */
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font-ui);
+      font-weight: 400;
+      background: var(--navy);
+      color: var(--text-hi);
+      max-width: 480px;
+      margin: 0 auto;
+      overflow-x: hidden;
+      min-height: 100%;
+      position: relative;
+    }
+
+    /* Scanline effect — very subtle, gives depth */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.015) 2px,
+        rgba(0,0,0,0.015) 4px
+      );
+    }
+
+    /* ═══════════════════════════════════════════════
+       VIEWS
+    ═══════════════════════════════════════════════ */
+    .view { display: none; height: 100vh; overflow: hidden; flex-direction: column; }
+    .view.active { display: flex; animation: appear 0.25s ease both; }
+
+    @keyframes appear {
+      from { opacity: 0; transform: translateX(12px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ═══════════════════════════════════════════════
+       ONBOARDING VIEW
+    ═══════════════════════════════════════════════ */
+    .onboarding {
+      justify-content: center;
+      align-items: center;
+      padding: 40px 36px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .onboarding::before {
+      content: '';
+      position: absolute;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, var(--teal-glow) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .brand-mark {
+      width: 64px;
+      height: 64px;
+      background: var(--teal-soft);
+      border: 1px solid rgba(0,212,170,0.25);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 24px;
+    }
+
+    .app-title {
+      font-size: 32px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      color: var(--text-hi);
+      margin-bottom: 10px;
+    }
+
+    .app-subtitle {
+      font-size: 15px;
+      font-weight: 300;
+      color: var(--text-mid);
+      text-align: center;
+      line-height: 1.6;
+      margin-bottom: 32px;
+      max-width: 280px;
+    }
+
+    .features {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+
+    .feature-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text-mid);
+    }
+
+    .feature-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--teal);
+      flex-shrink: 0;
+    }
+
+    .cta-btn {
+      width: 100%;
+      padding: 15px;
+      background: var(--teal);
+      color: var(--black);
+      border-radius: 12px;
+      font-family: var(--font-ui);
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      transition: opacity 0.15s, transform 0.1s;
+      margin-bottom: 16px;
+    }
+
+    .cta-btn:hover  { opacity: 0.88; }
+    .cta-btn:active { transform: scale(0.98); }
+
+    .legal-note {
+      font-size: 11px;
+      color: var(--text-lo);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* ═══════════════════════════════════════════════
+       CHAT LIST VIEW
+    ═══════════════════════════════════════════════ */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 14px;
+      border-bottom: 1px solid var(--border-sub);
+      flex-shrink: 0;
+    }
+
+    .topbar-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .lock-icon {
+      font-size: 14px;
+      color: var(--teal);
+    }
+
+    .topbar-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-hi);
+    }
+
+    .topbar-actions button {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--card);
+      color: var(--text-mid);
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+
+    .topbar-actions button:hover { background: var(--border); }
+
+    .chat-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+
+    .chat-list::-webkit-scrollbar { width: 3px; }
+    .chat-list::-webkit-scrollbar-track { background: transparent; }
+    .chat-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .chat-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: background 0.12s;
+      border-bottom: 1px solid var(--border-sub);
+    }
+
+    .chat-row:hover { background: rgba(255,255,255,0.02); }
+
+    .avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      font-weight: 500;
+      color: var(--teal);
+      flex-shrink: 0;
+      text-transform: uppercase;
+    }
+
+    .chat-info { flex: 1; min-width: 0; }
+
+    .chat-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3px;
+    }
+
+    .chat-name-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .chat-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-hi);
+    }
+
+    .verified-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--teal);
+    }
+
+    .chat-time {
+      font-size: 11px;
+      color: var(--text-lo);
+    }
+
+    .chat-time.unread { color: var(--teal); }
+
+    .chat-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-preview {
+      font-size: 13px;
+      color: var(--text-mid);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+
+    .unread-badge {
+      background: var(--teal);
+      color: var(--black);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 100px;
+      margin-left: 8px;
+      flex-shrink: 0;
+    }
+
+    .fab {
+      position: absolute;
+      bottom: 24px;
+      right: 20px;
+      width: 52px;
+      height: 52px;
+      background: var(--teal);
+      color: var(--black);
+      border-radius: 14px;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(0,212,170,0.3);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .fab:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 28px rgba(0,212,170,0.4);
+    }
+
+    /* ═══════════════════════════════════════════════
+       CONVERSATION VIEW
+    ═══════════════════════════════════════════════ */
+    .conv-topbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px 12px;
+      border-bottom: 1px solid var(--border-sub);
+      flex-shrink: 0;
+    }
+
+    .back-btn {
+      color: var(--text-mid);
+      font-size: 20px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      transition: background 0.12s;
+    }
+
+    .back-btn:hover { background: var(--card); }
+
+    .conv-info { flex: 1; }
+
+    .conv-name {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-hi);
+      line-height: 1.2;
+    }
+
+    .conv-enc-status {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--teal);
+    }
+
+    .enc-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--teal);
+      animation: blink 2s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .messages::-webkit-scrollbar { width: 3px; }
+    .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .enc-notice {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 12px;
+      background: var(--teal-soft);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--teal);
+      text-align: center;
+    }
+
+    .bubble-row {
+      display: flex;
+    }
+
+    .bubble-row.out { justify-content: flex-end; }
+    .bubble-row.in  { justify-content: flex-start; }
+
+    .bubble-col {
+      display: flex;
+      flex-direction: column;
+      max-width: 72%;
+    }
+
+    .bubble-row.out .bubble-col { align-items: flex-end; }
+    .bubble-row.in  .bubble-col { align-items: flex-start; }
+
+    .bubble {
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--text-hi);
+    }
+
+    .bubble-row.out .bubble {
+      background: var(--bubble-out);
+      border-bottom-right-radius: 4px;
+    }
+
+    .bubble-row.in .bubble {
+      background: var(--bubble-in);
+      border-bottom-left-radius: 4px;
+    }
+
+    .bubble-meta {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin: 2px 4px 0;
+    }
+
+    .bubble-time {
+      font-size: 10px;
+      color: var(--text-lo);
+    }
+
+    .tick {
+      font-size: 10px;
+      color: var(--teal);
+    }
+
+    /* ═══════════════════════════════════════════════
+       INPUT BAR
+    ═══════════════════════════════════════════════ */
+    .input-bar {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      padding: 10px 14px 20px;
+      border-top: 1px solid var(--border-sub);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+
+    .msg-input {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 10px 16px;
+      font-size: 15px;
+      color: var(--text-hi);
+      resize: none;
+      outline: none;
+      max-height: 100px;
+      overflow-y: auto;
+      line-height: 1.5;
+      transition: border-color 0.18s;
+    }
+
+    .msg-input::placeholder { color: var(--text-lo); }
+    .msg-input:focus { border-color: var(--teal); }
+
+    .send-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--teal);
+      color: var(--black);
+      font-size: 17px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.15s, transform 0.1s;
+      flex-shrink: 0;
+    }
+
+    .send-btn:hover  { opacity: 0.88; }
+    .send-btn:active { transform: scale(0.95); }
+
+    /* ═══════════════════════════════════════════════
+       FINGERPRINT TOAST
+    ═══════════════════════════════════════════════ */
+    .fingerprint-bar {
+      position: absolute;
+      bottom: 80px;
+      left: 16px;
+      right: 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: none;
+      z-index: 100;
+    }
+
+    .fingerprint-bar.show { display: flex; gap: 10px; align-items: flex-start; }
+
+    .fp-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-lo);
+      margin-bottom: 4px;
+    }
+
+    .fp-value {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--teal);
+      word-break: break-all;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ══════════════════════════════════════════
+       VIEW: ONBOARDING
+  ══════════════════════════════════════════ -->
+  <div class="view onboarding active" id="v-onboarding">
+    <div class="brand-mark">🔒</div>
+
+    <h1 class="app-title">Cypherchat</h1>
+    <p class="app-subtitle">Zero-knowledge messaging. No accounts. No metadata. No compromise.</p>
+
+    <div class="features">
+      <div class="feature-row">
+        <div class="feature-dot"></div>
+        <span>End-to-end encrypted with Double Ratchet</span>
+      </div>
+      <div class="feature-row">
+        <div class="feature-dot"></div>
+        <span>No user IDs — invite links only</span>
+      </div>
+      <div class="feature-row">
+        <div class="feature-dot"></div>
+        <span>All data stored locally, encrypted at rest</span>
+      </div>
+      <div class="feature-row">
+        <div class="feature-dot"></div>
+        <span>Open source · AGPL-3.0 · No telemetry</span>
+      </div>
+    </div>
+
+    <button class="cta-btn" onclick="showView('chat-list')">Generate My Identity</button>
+
+    <p class="legal-note">
+      A unique key pair is generated on this device.<br>
+      Nothing is stored on any server.
+    </p>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       VIEW: CHAT LIST
+  ══════════════════════════════════════════ -->
+  <div class="view" id="v-chat-list" style="position:relative;">
+    <div class="topbar">
+      <div class="topbar-title">
+        <span class="lock-icon">🔒</span>
+        <span class="topbar-name">Cypherchat</span>
+      </div>
+      <div class="topbar-actions">
+        <button title="New chat" onclick="alert('Share your invite link to start a conversation.')">＋</button>
+      </div>
+    </div>
+
+    <div class="chat-list" id="chatList">
+      <!-- Injected by JS -->
+    </div>
+
+    <button class="fab" onclick="alert('Create an invitation link and share it securely.')">＋</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       VIEW: CONVERSATION
+  ══════════════════════════════════════════ -->
+  <div class="view" id="v-conversation">
+    <div class="conv-topbar">
+      <button class="back-btn" onclick="showView('chat-list')">←</button>
+      <div class="conv-info">
+        <div class="conv-name" id="convName">Alex K</div>
+        <div class="conv-enc-status">
+          <div class="enc-dot"></div>
+          End-to-end encrypted
+        </div>
+      </div>
+      <button
+        style="width:36px;height:36px;border-radius:10px;background:var(--card);color:var(--text-mid);font-size:14px;"
+        onclick="document.getElementById('fpBar').classList.toggle('show')">🔑</button>
+    </div>
+
+    <div class="messages" id="messages">
+      <div class="enc-notice">
+        🔒 Messages are end-to-end encrypted and cannot be read by anyone else
+      </div>
+      <!-- Injected by JS -->
+    </div>
+
+    <div
+      class="fingerprint-bar"
+      id="fpBar">
+      <div style="flex:1">
+        <div class="fp-label">Key Fingerprint</div>
+        <div class="fp-value" id="fpValue">
+          A3:F7:22:CC:19:D4:88:0B:5A:1E:7C:B3:4F:92:D0:11:<br>
+          E8:3A:5F:2B:90:CC:4D:07:AA:61:FF:BE:23:89:14:7E
+        </div>
+      </div>
+    </div>
+
+    <div class="input-bar">
+      <textarea
+        class="msg-input"
+        id="msgInput"
+        placeholder="Message"
+        rows="1"
+        onkeydown="handleKey(event)"
+        oninput="autoResize(this)"></textarea>
+      <button class="send-btn" onclick="sendMessage()">↑</button>
+    </div>
+  </div>
+
+  <script>
+  'use strict';
+
+  // ── Views ──────────────────────────────────────────────────────────────────
+  function showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    const el = document.getElementById('v-' + id);
+    if (el) el.classList.add('active');
+    if (id === 'chat-list') renderChatList();
+    if (id === 'conversation') renderMessages();
+    window.scrollTo(0, 0);
+  }
+
+  // ── Chat list data ─────────────────────────────────────────────────────────
+  const CHATS = [
+    { id: 'conv1', name: 'Alex K',         preview: 'Sounds good — I\'ll send the files now', time: 'now', unread: 2, verified: true },
+    { id: 'conv2', name: 'Morgan',          preview: 'Thanks for sharing that link',            time: '2m',  unread: 0, verified: true },
+    { id: 'conv3', name: 'Unknown Contact', preview: 'Hey, got your invite — this is me!',      time: '1h',  unread: 1, verified: false },
+    { id: 'conv4', name: 'Dev Team',        preview: 'Build is passing on main ✓',              time: '3h',  unread: 0, verified: true },
+  ];
+
+  function renderChatList() {
+    const list = document.getElementById('chatList');
+    list.innerHTML = CHATS.map(c => `
+      <div class="chat-row" onclick="openConversation('${c.id}', '${c.name}')">
+        <div class="avatar">${c.name[0]}</div>
+        <div class="chat-info">
+          <div class="chat-top">
+            <div class="chat-name-row">
+              <span class="chat-name">${c.name}</span>
+              ${c.verified ? '<div class="verified-dot"></div>' : ''}
+            </div>
+            <span class="chat-time ${c.unread ? 'unread' : ''}">${c.time}</span>
+          </div>
+          <div class="chat-bottom">
+            <span class="chat-preview">${c.preview}</span>
+            ${c.unread ? `<span class="unread-badge">${c.unread}</span>` : ''}
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openConversation(id, name) {
+    document.getElementById('convName').textContent = name;
+    // Generate a fake fingerprint based on name for demo
+    const fp = [...name].map(c => c.charCodeAt(0).toString(16).padStart(2,'0')).join(':').repeat(8).substring(0, 47);
+    document.getElementById('fpValue').textContent = fp.toUpperCase();
+    showView('conversation');
+    document.getElementById('fpBar').classList.remove('show');
+  }
+
+  // ── Messages ───────────────────────────────────────────────────────────────
+  const MSGS = [
+    { text: 'Hey — got your invitation link. Setting up now.',           out: false, time: '14:02' },
+    { text: 'Great! Let me know when you\'re ready to test.',            out: true,  time: '14:03' },
+    { text: 'Ready. Key fingerprints match on my end.',                  out: false, time: '14:05' },
+    { text: 'Confirmed here too. We\'re good. 🔒',                       out: true,  time: '14:05', delivered: true },
+    { text: 'I\'ll share the design files through here from now on.',    out: false, time: '14:07' },
+    { text: 'Works for me. Much better than email.',                     out: true,  time: '14:08', delivered: true },
+  ];
+
+  let localMsgs = [...MSGS];
+
+  function renderMessages() {
+    const container = document.getElementById('messages');
+    const notice    = container.querySelector('.enc-notice');
+    container.innerHTML = '';
+    if (notice) container.appendChild(notice);
+
+    localMsgs.forEach(m => {
+      const row = document.createElement('div');
+      row.className = `bubble-row ${m.out ? 'out' : 'in'}`;
+      row.innerHTML = `
+        <div class="bubble-col">
+          <div class="bubble">${escapeHtml(m.text)}</div>
+          <div class="bubble-meta">
+            <span class="bubble-time">${m.time}</span>
+            ${m.out ? `<span class="tick">${m.delivered ? '✓✓' : '✓'}</span>` : ''}
+          </div>
+        </div>
+      `;
+      container.appendChild(row);
+    });
+
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function sendMessage() {
+    const input = document.getElementById('msgInput');
+    const text  = input.value.trim();
+    if (!text) return;
+    const now = new Date();
+    localMsgs.push({
+      text,
+      out: true,
+      time: `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`,
+      delivered: false
+    });
+    input.value = '';
+    input.style.height = '';
+    renderMessages();
+    // Simulate delivery after 1.5s
+    setTimeout(() => {
+      localMsgs[localMsgs.length - 1].delivered = true;
+      renderMessages();
+    }, 1500);
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  function autoResize(el) {
+    el.style.height = '';
+    el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  renderChatList();
+  </script>
+
+</body>
+</html>
