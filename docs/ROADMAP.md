@@ -1,12 +1,12 @@
 # Cypherchat Development Roadmap
 
 **Status**: Early Alpha (Foundation Phase)
-**Last Updated**: November 21, 2025
+**Last Updated**: April 2026
 **Target GA**: Q2-Q3 2026
 
 ---
 
-## ðŸŽ¯ Strategic Goals
+## 🎯 Strategic Goals
 
 1. **Zero-Knowledge Architecture**: Complete end-to-end encryption pipeline with no central server involvement
 2. **Hardware-Backed Security**: All long-term secrets in Android Keystore with SQLCipher at-rest encryption
@@ -16,54 +16,48 @@
 
 ---
 
-## ðŸ“‹ Phase 1: Foundation (Current - December 2025)
+## 📋 Phase 1: Foundation (✅ Complete — April 2026)
 
-**Goal**: Establish project structure, CI/CD, and base security infrastructure
+**Goal**: establish project structure, CI/CD, and base security infrastructure
 
 ### Core Modules
 
 - [x] Project structure with `app`, `core/*`, and `gradle` directories
-- [ ] **crypto** module
-  - [ ] Android Keystore integration (key generation, storage, retrieval)
-  - [ ] SecureRandom implementation for all cryptographic operations
-  - [ ] Encryption/decryption utilities (AES-GCM)
-  - [ ] Double Ratchet algorithm skeleton
-  - [ ] Sensitive memory wiping utilities
-  - [ ] Unit tests (95%+ coverage)
+- [x] **crypto** module
+  - [x] Android Keystore integration (key generation, storage, retrieval)
+  - [x] SecureRandom implementation for all cryptographic operations
+  - [x] Encryption/decryption utilities (AES-GCM)
+  - [x] Double Ratchet algorithm skeleton
+  - [x] HKDF key derivation (RFC 5869)
+  - [x] Unit tests for AesGcmCipher and HkdfDerivation
 
-- [ ] **database** module
-  - [ ] SQLCipher configuration and initialization
-  - [ ] Room ORM setup with encrypted database
-  - [ ] Message, Contact, and Session DAOs
-  - [ ] Database migration strategy
-  - [ ] Unit tests for encryption/decryption round-trips
+- [x] **database** module
+  - [x] SQLCipher configuration and initialization
+  - [x] Room ORM setup with encrypted database
+  - [x] Message, Contact DAOs with Flow-based queries
+  - [x] TypeConverters for dates and enums
 
-- [ ] **network** module
-  - [ ] SimpleX transport client integration
-  - [ ] Protocol buffer definitions for messages
-  - [ ] Network request/response models
-  - [ ] Error handling and retry logic
-  - [ ] Integration tests with mock SimpleX
+- [x] **network** module
+  - [x] SimpleX transport interface definition
+  - [x] Message envelope wire format
+  - [x] Connection lifecycle types
 
-- [ ] **common** module
-  - [ ] Result<T> sealed class for error handling
-  - [ ] Coroutine dispatchers (Main, IO, Default)
-  - [ ] Shared utilities and extensions
-  - [ ] Logger abstraction (no sensitive data logging)
+- [x] **common** module
+  - [x] SecureResult<T> sealed class for error handling
+  - [x] Coroutine dispatchers (DispatcherProvider)
+  - [x] Logger abstraction (no sensitive data logging)
 
 ### Infrastructure
 
-- [ ] GitHub Actions CI/CD pipeline
-  - [ ] Build on every PR
-  - [ ] Run all unit tests
-  - [ ] Lint checks (Detekt, Android Lint)
-  - [ ] Security scanning (Dependency Check)
-- [ ] Dependency management with `libs.versions.toml`
-- [ ] Detekt configuration for code quality
+- [x] GitHub Actions CI/CD pipeline (build, test, lint)
+- [x] GitLab CI pipeline (security scanning)
+- [x] Dependency management with `libs.versions.toml`
+- [x] ProGuard rules for release builds
+- [x] ProGuard rules for release builds
 
 ---
 
-## ðŸ“‹ Phase 2: Authentication & Transport (January-February 2026)
+## 📋 Phase 2: Authentication & Transport (May-June 2026)
 
 **Goal**: Establish secure user identity and message transport
 
@@ -74,10 +68,9 @@
   - [ ] Profile creation with hardware-backed key provisioning
   - [ ] SimpleX invite code generation
   - [ ] QR code display for invite sharing
-  - [ ] @Preview composables for all screens
 
 - [ ] **core/crypto** enhancements
-  - [ ] HKDF for key derivation
+  - [ ] X3DH handshake protocol
   - [ ] Fingerprint computation (safety words from key hash)
   - [ ] Seed phrase management (12-word recovery)
 
@@ -89,101 +82,66 @@
   - [ ] Connection revocation
   - [ ] Metadata minimization verification
 
-- [ ] Protocol implementation
-  - [ ] Message envelope structure
-  - [ ] Delivery confirmation acknowledgments
-  - [ ] Typing indicators (privacy-aware)
-
 ---
 
-## ðŸ“‹ Phase 3: Core Messaging (March-April 2026)
+## 📋 Phase 3: Core Messaging (July-August 2026)
 
 **Goal**: Functional end-to-end encrypted messaging with contact management
 
-### Chat Feature Module (`feature/chat`)
+### Chat Feature
 
 - [ ] **UI Components**
-  - [ ] Chat list screen
-  - [ ] Conversation screen with message bubbles
-  - [ ] Message input with send button
-  - [ ] Message reactions and editing UI
+  - [x] Chat list screen (skeleton)
+  - [x] Conversation screen with message bubbles (skeleton)
+  - [ ] Wire ViewModels to real data sources
   - [ ] Message status indicators (sent, delivered, read)
 
 - [ ] **Data Layer**
-  - [ ] Message repository and DAOs
+  - [ ] Message repository wrapping DAOs
   - [ ] Local message caching
   - [ ] Message pagination for large conversations
-  - [ ] Encryption before database storage
+  - [ ] Encryption before database storage (wire ConversationViewModel)
 
 - [ ] **Business Logic**
   - [ ] Message composition and encryption
-  - [ ] Double Ratchet state machine
+  - [x] Double Ratchet state machine (implemented, needs network wiring)
   - [ ] Message ordering and deduplication
-  - [ ] Conversation state management (Koin)
-
-### Contacts Feature Module (`feature/contacts`)
-
-- [ ] Contact list UI
-- [ ] Contact detail screen
-- [ ] Contact request workflow
-- [ ] Contact verification (fingerprint comparison)
-- [ ] Contact blocking/muting
 
 ---
 
-## ðŸ“‹ Phase 4: Advanced Features (May-June 2026)
+## 📋 Phase 4: Advanced Features (September-October 2026)
 
 **Goal**: Rich messaging and data management capabilities
 
 ### Media Support
 
-- [ ] Image attachment sending
-  - [ ] Compression before encryption
-  - [ ] Thumbnail generation
-  - [ ] Download and storage
+- [ ] Image attachment sending (compression before encryption)
+- [ ] File attachment support with integrity verification
+- [ ] Voice/audio notes
 
-- [ ] File attachment support
-  - [ ] Integrity verification (SHA-256)
-  - [ ] Size limits and warnings
+### Settings & Account Management
 
-- [ ] Voice/audio notes (planned)
-  - [ ] Recording and encoding
-  - [ ] Playback with progress indicator
-
-### Settings & Account Management (`feature/settings`)
-
-- [ ] Backup and restore
-  - [ ] SQLCipher database export
-  - [ ] Encrypted backup file format
-  - [ ] Restore workflow
-
-- [ ] Security settings
-  - [ ] PIN/Biometric lock
-  - [ ] Session timeout configuration
-  - [ ] Key rotation scheduling
-
-- [ ] Privacy controls
-  - [ ] Message retention policies
-  - [ ] Auto-delete timers
-  - [ ] Metadata minimization status
+- [ ] Backup and restore (SQLCipher database export)
+- [ ] Encrypted backup file format
+- [ ] PIN/Biometric lock
+- [ ] Message retention policies and auto-delete timers
 
 ### Search & Indexing
 
 - [ ] Local message search (encrypted)
 - [ ] Contact search
-- [ ] Search result pagination
 
 ---
 
-## ðŸ“‹ Phase 5: Security Hardening & Testing (July-August 2026)
+## 📋 Phase 5: Security Hardening & Testing (November-December 2026)
 
 **Goal**: Production-grade security audit and comprehensive testing
 
 ### Security Review
 
-- [ ] Third-party security audit (TBD: firm selection)
+- [ ] Third-party security audit
 - [ ] Penetration testing
-- [ ] Cryptographic review
+- [ ] Cryptographic review of Double Ratchet implementation
 - [ ] Dependency scanning and SCA
 
 ### Testing
@@ -191,19 +149,11 @@
 - [ ] Integration tests (50+ scenarios)
 - [ ] End-to-end tests on emulator/device
 - [ ] Performance benchmarks
-- [ ] Stress testing (large message volumes)
 - [ ] Memory leak detection
-
-### Documentation
-
-- [ ] Security implementation details
-- [ ] API documentation for future SDK
-- [ ] User guide and FAQ updates
-- [ ] Contributor security handbook
 
 ---
 
-## ðŸ“‹ Phase 6: Distribution & Release (September 2026)
+## 📋 Phase 6: Distribution & Release (Q1 2027)
 
 **Goal**: Public beta and eventual stable release
 
@@ -211,102 +161,36 @@
 
 - [ ] Reproducible builds
 - [ ] F-Droid submission
-- [ ] Aurora Store listing
 - [ ] GitHub Releases with signed binaries
 - [ ] Automated delta updates
 
 ### Community
 
 - [ ] Security advisory disclosure process
-- [ ] Bug bounty program (pending)
+- [ ] Bug bounty program
 - [ ] Community forum/discussions
 - [ ] Regular security updates
 
-### Release Candidates
-
-- [ ] Beta 1: Community testing
-- [ ] Beta 2-3: Feedback integration
-- [ ] Release Candidate: Final security review
-- [ ] **v1.0 Stable**: Feature-complete, audited, production-ready
-
 ---
 
-## ðŸš€ Future Enhancements (Post-1.0)
-
-### Messaging UX
-
-- [ ] Message reactions emoji picker
-- [ ] Quoted replies with threading
-- [ ] Message-editing history
-- [ ] Unsend capability (within time window)
-- [ ] Rich text formatting
-
-### Interoperability
+## 🚀 Future Enhancements (Post-1.0)
 
 - [ ] Signal protocol bridge (potential)
 - [ ] Matrix federation (potential)
-- [ ] Portable key export (QR/file-based migration)
-
-### Performance
-
-- [ ] Lazy loading for media
-- [ ] Encrypted caching strategies
-- [ ] Background sync optimization
-- [ ] Battery usage optimization
-
-### Accessibility
-
-- [ ] Screen reader support
-- [ ] High-contrast themes
-- [ ] Font size scaling
-- [ ] Gesture support for power users
+- [ ] Post-quantum key exchange research
+- [ ] Rich text formatting in messages
+- [ ] Quoted replies with threading
 
 ---
 
-## ðŸ” Security Priorities Throughout All Phases
+## 🔐 Security Priorities Throughout All Phases
 
-- âœ… **Memory Safety**: Overwrite sensitive data after use in every phase
-- âœ… **No Logging**: Sanitize all logging; never log PII or cryptographic material
-- âœ… **Secure Dependencies**: Pin exact versions; evaluate every new library
-- âœ… **Code Review**: All PRs reviewed by security-cleared maintainers
-- âœ… **Threat Modeling**: Revisit threat model quarterly as features evolve
-
----
-
-## ðŸ“Š Key Metrics & Success Criteria
-
-| Phase | Metric | Target |
-|-------|--------|--------|
-| Phase 1 | Core module coverage | 95%+ unit tests |
-| Phase 2 | Profile creation time | < 2 seconds |
-| Phase 3 | E2E message latency | < 500ms average |
-| Phase 4 | Media encryption overhead | < 5% |
-| Phase 5 | Security audit findings | 0 critical issues |
-| Phase 6 | Beta user count | 1,000+ testers |
+- ✅ **Memory Safety**: Overwrite sensitive data after use in every phase
+- ✅ **No Logging**: Sanitize all logging; never log PII or cryptographic material
+- ✅ **Secure Dependencies**: Pin exact versions; evaluate every new library
+- ✅ **Code Review**: All PRs reviewed by security-cleared maintainers
+- ✅ **Threat Modeling**: Revisit threat model quarterly as features evolve
 
 ---
 
-## ðŸ¤ Community Involvement
-
-- **Phase 1-2**: Closed core team (security-critical foundation)
-- **Phase 3-4**: Limited beta (selected security researchers)
-- **Phase 5**: Expanded security review program
-- **Phase 6+**: Full open-source community contributions
-
----
-
-## ðŸ“ž Feedback & Adjustments
-
-This roadmap is **living** and subject to change based on:
-
-- Security discoveries or new threat vectors
-- Community feature requests
-- Dependency availability/lifecycle
-- Resource allocation
-
-File issues or discussions on GitHub to propose changes.
-
----
-
-**Built with â¤ï¸ and ðŸ” by the Cypherchat Team**
-
+**Built with ❤️ and 🔐 by the Cypherchat Team**
