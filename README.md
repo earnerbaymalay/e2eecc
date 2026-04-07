@@ -10,7 +10,7 @@
 [![License](https://img.shields.io/badge/License-MIT-f1fa8c?style=for-the-badge)]()
 [![Encryption](https://img.shields.io/badge/Encryption-AES--256--GCM+%2B+Double_Ratchet-bd93f9?style=for-the-badge)]()
 
-[**⚡ Quick Start**](#-build--run-in-60-seconds) • [**📖 Usage Guide**](docs/USAGE.md) • [**🏗️ Architecture**](docs/ARCHITECTURE.md) • [**🔒 Security**](docs/SECURITY.md) • [**🗺️ Roadmap**](docs/ROADMAP.md) • [**🍎 iPhone PWA**](https://github.com/earnerbaymalay/e2eecc-pwa)
+[**⚡ Quick Start**](#-build--run-in-60-seconds) • [**📖 Usage Guide**](docs/USAGE.md) • [**🏗️ Architecture**](docs/ARCHITECTURE.md) • [**🔒 Security**](docs/SECURITY.md) • [**🗺️ Roadmap**](docs/ROADMAP.md) • [**🍎 iPhone PWA**](https://earnerbaymalay.github.io/aether-hub/cypherchat/)
 
 ---
 
@@ -194,7 +194,7 @@ See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 
 **Got an iPhone?** Install Cypherchat directly from Safari — no App Store needed. Same zero-knowledge, end-to-end encrypted messaging, running entirely on your device.
 
-👉 **[Get Cypherchat PWA →](https://github.com/earnerbaymalay/e2eecc-pwa)**
+👉 **[Install Cypherchat PWA](https://earnerbaymalay.github.io/aether-hub/cypherchat/)**
 
 | | 📱 Android (this repo) | 🍎 iPhone (PWA) |
 |---|---|---|
@@ -204,7 +204,7 @@ See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 | **Price** | Free | Free |
 | **Privacy** | 100% local | 100% local |
 
-> **Shared wire format:** Both apps use identical AES-256-GCM envelopes `[VERSION(1)][IV(12)][CT+TAG]`. Future: cross-platform message exchange via JSON export.
+> **Shared wire format:** Both apps use identical AES-256-GCM envelopes `[VERSION(1)][IV(12)][CT+TAG]`. Cross-platform message exchange via JSON export/import.
 
 ---
 
