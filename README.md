@@ -5,11 +5,12 @@
 
 [![Status](https://img.shields.io/badge/Status-Alpha-50fa7b?style=for-the-badge)]()
 [![Platform](https://img.shields.io/badge/Platform-Android_24%2B-4c566a?style=for-the-badge&logo=android)]()
+[![PWA](https://img.shields.io/badge/PWA-iPhone_%7C_Any_Browser-81a1c1?style=for-the-badge&logo=apple)]()
 [![Language](https://img.shields.io/badge/Kotlin-100%25-7F52FF?style=for-the-badge&logo=kotlin)]()
 [![License](https://img.shields.io/badge/License-MIT-f1fa8c?style=for-the-badge)]()
 [![Encryption](https://img.shields.io/badge/Encryption-AES--256--GCM+%2B+Double_Ratchet-bd93f9?style=for-the-badge)]()
 
-[**⚡ Quick Start**](#-build--run-in-60-seconds) • [**📖 Usage Guide**](docs/USAGE.md) • [**🏗️ Architecture**](docs/ARCHITECTURE.md) • [**🔒 Security**](docs/SECURITY.md) • [**🗺️ Roadmap**](docs/ROADMAP.md)
+[**⚡ Quick Start**](#-build--run-in-60-seconds) • [**📖 Usage Guide**](docs/USAGE.md) • [**🏗️ Architecture**](docs/ARCHITECTURE.md) • [**🔒 Security**](docs/SECURITY.md) • [**🗺️ Roadmap**](docs/ROADMAP.md) • [**🍎 iPhone PWA**](https://github.com/earnerbaymalay/e2eecc-pwa)
 
 ---
 
@@ -186,6 +187,24 @@ See [docs/ROADMAP.md](docs/ROADMAP.md) for details.
 | [**Roadmap**](docs/ROADMAP.md) | Development phases, what's done, what's next |
 | [**Contributing**](CONTRIBUTING.md) | How to contribute, coding standards, PR process |
 | [**Security Policy**](SECURITY.md) | How to responsibly disclose vulnerabilities |
+
+---
+
+## 🍎 Also Available: Cypherchat PWA (iPhone)
+
+**Got an iPhone?** Install Cypherchat directly from Safari — no App Store needed. Same zero-knowledge, end-to-end encrypted messaging, running entirely on your device.
+
+👉 **[Get Cypherchat PWA →](https://github.com/earnerbaymalay/e2eecc-pwa)**
+
+| | 📱 Android (this repo) | 🍎 iPhone (PWA) |
+|---|---|---|
+| **Crypto** | Android Keystore + JCA | WebCrypto API (same algorithms) |
+| **Database** | Room + SQLCipher | IndexedDB (encrypted content) |
+| **Install** | APK / F-Droid | Safari → Add to Home Screen |
+| **Price** | Free | Free |
+| **Privacy** | 100% local | 100% local |
+
+> **Shared wire format:** Both apps use identical AES-256-GCM envelopes `[VERSION(1)][IV(12)][CT+TAG]`. Future: cross-platform message exchange via JSON export.
 
 ---
 
