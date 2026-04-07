@@ -1,14 +1,19 @@
-name: Android CI
+name: E2EECC CI/CD
 
 on:
   push:
     branches: [ main ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
 
+env:
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.parallel=true"
+
 jobs:
-  build:
-    name: Build & Test
+  # ── Android Build ──
+  android:
+    name: Android Build
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -23,36 +28,81 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      - name: Grant execute permission for Gradle
+      - name: Grant execute permission
         run: chmod +x gradlew
 
-      - name: Build with Gradle (no daemon for CI)
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+      - name: Build debug APK
+        run: ./gradlew app:assembleDebug --no-daemon --stacktrace
+
+      - name: Build release APK (unsigned)
+        run: ./gradlew app:assembleRelease --no-daemon --stacktrace
+        continue-on-error: true
 
       - name: Run unit tests
         run: ./gradlew test --no-daemon --stacktrace
-
-      - name: Lint check
-        run: ./gradlew lintDebug --no-daemon --stacktrace
         continue-on-error: true
 
-      - name: Upload build artifacts
+      - name: Lint check
+        run: ./gradlew app:lintDebug --no-daemon --stacktrace
+        continue-on-error: true
+
+      - name: Upload debug APK
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: debug-apk
+          name: cypherchat-android-debug
           path: app/build/outputs/apk/debug/*.apk
+          retention-days: 30
+
+      - name: Upload release APK
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypherchat-android-release-unsigned
+          path: app/build/outputs/apk/release/*.apk
+          retention-days: 30
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: cypherchat-test-results
           path: '**/build/test-results/test/'
+          retention-days: 14
 
-      - name: Upload lint reports
+      - name: Upload lint report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lint-reports
+          name: cypherchat-lint-report
           path: '**/build/reports/lint-results-debug.html'
+          retention-days: 14
+
+  # ── Create GitHub Release on Tag ──
+  release:
+    name: Create Release
+    needs: [android]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: find artifacts/ -type f | sort
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/**/*.apk
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
