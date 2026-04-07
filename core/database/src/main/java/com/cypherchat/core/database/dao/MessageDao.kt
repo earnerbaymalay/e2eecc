@@ -8,6 +8,11 @@ import androidx.room.Update
 import com.cypherchat.core.database.entity.MessageEntity
 import kotlinx.coroutines.flow.Flow
 
+data class LastMessagePreview(
+    val conversationId: String,
+    val previewText: String
+)
+
 @Dao
 interface MessageDao {
 
@@ -43,4 +48,21 @@ interface MessageDao {
 
     @Query("DELETE FROM messages WHERE id = :id")
     suspend fun deleteById(id: String)
+
+    @Query(
+        """
+        SELECT conversation_id, 
+               CASE 
+                   WHEN is_outgoing = 1 THEN '✓ ' || substr(encrypted_content, 1, 50)
+                   ELSE substr(encrypted_content, 1, 50)
+               END as previewText
+        FROM messages m1
+        WHERE timestamp = (
+            SELECT MAX(timestamp) FROM messages m2 
+            WHERE m2.conversation_id = m1.conversation_id
+        )
+        ORDER BY timestamp DESC
+        """
+    )
+    fun observeAllLastMessages(): Flow<List<LastMessagePreview>>
 }

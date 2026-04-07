@@ -18,27 +18,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.cypherchat.ui.theme.*
-
-// Placeholder data for UI development — wire to ViewModel + Room in next phase
-private data class ChatPreview(
-    val conversationId: String,
-    val contactName: String,
-    val lastMessagePreview: String,
-    val timestamp: String,
-    val unread: Int,
-    val verified: Boolean
-)
-
-private val PLACEHOLDER_CHATS = listOf(
-    ChatPreview("conv1", "Alex K", "Sounds good — I'll send the files now", "now", 2, true),
-    ChatPreview("conv2", "Morgan", "Thanks for sharing that link", "2m", 0, true),
-    ChatPreview("conv3", "Unknown Contact", "Hey, got your invite — this is me!", "1h", 1, false),
-    ChatPreview("conv4", "Dev Team", "Build is passing on main ✓", "3h", 0, true),
-)
+import com.cypherchat.viewmodel.ChatListViewModel
+import com.cypherchat.viewmodel.ContactUi
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatListScreen(onOpenChat: (String) -> Unit) {
+    val viewModel: ChatListViewModel = koinViewModel()
+    val uiState by viewModel.uiState.collectAsState()
+
     Scaffold(
         containerColor = CipherNavy,
         topBar = {
@@ -68,7 +57,10 @@ fun ChatListScreen(onOpenChat: (String) -> Unit) {
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick           = { /* TODO: show new chat / invitation flow */ },
+                onClick           = {
+                    // TODO: Show new chat dialog
+                    viewModel.createNewConversation("New Contact")
+                },
                 containerColor    = CipherTeal,
                 contentColor      = CipherBlack,
                 shape             = RoundedCornerShape(14.dp)
@@ -77,7 +69,7 @@ fun ChatListScreen(onOpenChat: (String) -> Unit) {
             }
         }
     ) { padding ->
-        if (PLACEHOLDER_CHATS.isEmpty()) {
+        if (uiState.contacts.isEmpty()) {
             EmptyState(modifier = Modifier.padding(padding))
         } else {
             LazyColumn(
@@ -86,8 +78,9 @@ fun ChatListScreen(onOpenChat: (String) -> Unit) {
                     .padding(padding),
                 contentPadding = PaddingValues(vertical = 8.dp)
             ) {
-                items(PLACEHOLDER_CHATS) { chat ->
-                    ChatRow(chat = chat, onClick = { onOpenChat(chat.conversationId) })
+                items(uiState.contacts) { contact ->
+                    val lastMsg = uiState.lastMessages[contact.conversationId] ?: "Start a conversation"
+                    ChatRow(contact = contact, lastMessage = lastMsg, onClick = { onOpenChat(contact.conversationId) })
                     Divider(color = CipherBorder.copy(alpha = 0.5f), thickness = 0.5.dp,
                             modifier = Modifier.padding(start = 72.dp))
                 }
@@ -97,7 +90,7 @@ fun ChatListScreen(onOpenChat: (String) -> Unit) {
 }
 
 @Composable
-private fun ChatRow(chat: ChatPreview, onClick: () -> Unit) {
+private fun ChatRow(contact: ContactUi, lastMessage: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -115,7 +108,7 @@ private fun ChatRow(chat: ChatPreview, onClick: () -> Unit) {
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text  = chat.contactName.take(1).uppercase(),
+                text  = contact.initial,
                 style = MaterialTheme.typography.titleMedium,
                 color = CipherTeal
             )
@@ -133,11 +126,11 @@ private fun ChatRow(chat: ChatPreview, onClick: () -> Unit) {
                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
                     Text(
-                        text  = chat.contactName,
+                        text  = contact.displayName,
                         style = MaterialTheme.typography.titleMedium,
                         color = TextPrimary
                     )
-                    if (chat.verified) {
+                    if (contact.verified) {
                         Box(
                             modifier = Modifier
                                 .size(7.dp)
@@ -145,39 +138,16 @@ private fun ChatRow(chat: ChatPreview, onClick: () -> Unit) {
                         )
                     }
                 }
-                Text(
-                    text  = chat.timestamp,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = if (chat.unread > 0) CipherTeal else TextMuted
-                )
             }
 
-            Row(
-                modifier              = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment     = Alignment.CenterVertically
-            ) {
-                Text(
-                    text     = chat.lastMessagePreview,
-                    style    = MaterialTheme.typography.bodyMedium,
-                    color    = TextSecondary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
-                )
-                if (chat.unread > 0) {
-                    Badge(
-                        containerColor = CipherTeal,
-                        contentColor   = CipherBlack,
-                        modifier       = Modifier.padding(start = 8.dp)
-                    ) {
-                        Text(
-                            text  = chat.unread.toString(),
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                    }
-                }
-            }
+            Text(
+                text     = lastMessage,
+                style    = MaterialTheme.typography.bodyMedium,
+                color    = TextSecondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }

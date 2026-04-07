@@ -5,9 +5,13 @@ import com.cypherchat.core.common.DefaultDispatcherProvider
 import com.cypherchat.core.common.DispatcherProvider
 import com.cypherchat.core.common.Logger
 import com.cypherchat.core.database.AppDatabase
+import com.cypherchat.viewmodel.ChatListViewModel
+import com.cypherchat.viewmodel.ConversationViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
+import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
+import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
 
 class CypherchatApplication : Application() {
@@ -20,7 +24,7 @@ class CypherchatApplication : Application() {
         startKoin {
             androidLogger()
             androidContext(this@CypherchatApplication)
-            modules(coreModule, databaseModule)
+            modules(coreModule, databaseModule, viewModelModule)
         }
     }
 
@@ -32,5 +36,12 @@ class CypherchatApplication : Application() {
         single { AppDatabase.getInstance(get()) }
         single { get<AppDatabase>().messageDao() }
         single { get<AppDatabase>().contactDao() }
+    }
+
+    private val viewModelModule = module {
+        viewModel { ChatListViewModel(get(), get(), get()) }
+        viewModel { (conversationId: String) ->
+            ConversationViewModel(conversationId, get(), get(), get())
+        }
     }
 }

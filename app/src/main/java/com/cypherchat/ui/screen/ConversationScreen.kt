@@ -18,25 +18,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.cypherchat.ui.theme.*
+import com.cypherchat.viewmodel.ConversationViewModel
+import com.cypherchat.viewmodel.UiMessage
 import kotlinx.coroutines.launch
-
-// Placeholder message model — wire to Room/ViewModel in next phase
-private data class Message(
-    val id: String,
-    val text: String,
-    val isOutgoing: Boolean,
-    val timestamp: String,
-    val delivered: Boolean = true
-)
-
-private val PLACEHOLDER_MESSAGES = listOf(
-    Message("1", "Hey — got your invitation link. Setting up now.", false, "14:02"),
-    Message("2", "Great! Let me know when you're ready to test the connection.", true, "14:03"),
-    Message("3", "Ready. This feels instant and the key fingerprints match.", false, "14:05"),
-    Message("4", "Confirmed on my end too. We're good. 🔒", true, "14:05", delivered = true),
-    Message("5", "I'll share the design files through here from now on.", false, "14:07"),
-    Message("6", "Works for me. Much better than email.", true, "14:08"),
-)
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,14 +30,16 @@ fun ConversationScreen(
     conversationId: String,
     onBack: () -> Unit
 ) {
+    val viewModel: ConversationViewModel = koinViewModel { parametersOf(conversationId) }
+    val uiState by viewModel.uiState.collectAsState()
     var input by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
     val scope     = rememberCoroutineScope()
 
-    // Scroll to bottom on initial load
-    LaunchedEffect(Unit) {
-        if (PLACEHOLDER_MESSAGES.isNotEmpty()) {
-            listState.scrollToItem(PLACEHOLDER_MESSAGES.lastIndex)
+    // Scroll to bottom when messages change
+    LaunchedEffect(uiState.messages.size) {
+        if (uiState.messages.isNotEmpty()) {
+            listState.scrollToItem(uiState.messages.lastIndex)
         }
     }
 
@@ -67,14 +55,15 @@ fun ConversationScreen(
                 title = {
                     Column {
                         Text(
-                            "Alex K",    // TODO: resolve from conversationId
+                            uiState.contactName,
                             style = MaterialTheme.typography.titleMedium,
                             color = TextPrimary
                         )
                         Row(
                             verticalAlignment     = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
+                        )
+                        {
                             Icon(
                                 imageVector        = Icons.Outlined.Lock,
                                 contentDescription = null,
@@ -82,9 +71,9 @@ fun ConversationScreen(
                                 modifier           = Modifier.size(10.dp)
                             )
                             Text(
-                                "End-to-end encrypted",
+                                if (uiState.verified) "Verified • End-to-end encrypted" else "End-to-end encrypted",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = CipherTeal
+                                color = if (uiState.verified) CipherGreen else CipherTeal
                             )
                         }
                     }
@@ -123,7 +112,7 @@ fun ConversationScreen(
                 IconButton(
                     onClick  = {
                         if (input.isNotBlank()) {
-                            // TODO: encrypt + send via ViewModel
+                            viewModel.sendMessage(input)
                             input = ""
                         }
                     },
@@ -158,10 +147,37 @@ fun ConversationScreen(
                 Spacer(Modifier.height(8.dp))
             }
 
-            items(PLACEHOLDER_MESSAGES) { msg ->
-                MessageBubble(msg)
+            if (uiState.messages.isEmpty()) {
+                item {
+                    EmptyConversation()
+                }
+            } else {
+                items(uiState.messages) { msg ->
+                    MessageBubble(msg)
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun EmptyConversation() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 40.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            "🔒",
+            style = MaterialTheme.typography.headlineMedium
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            "No messages yet",
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextMuted
+        )
     }
 }
 
@@ -193,7 +209,7 @@ private fun EncryptionNotice() {
 }
 
 @Composable
-private fun MessageBubble(message: Message) {
+private fun MessageBubble(message: UiMessage) {
     Row(
         modifier              = Modifier.fillMaxWidth(),
         horizontalArrangement = if (message.isOutgoing) Arrangement.End else Arrangement.Start
