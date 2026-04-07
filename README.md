@@ -16,6 +16,8 @@
 
 [**⚡ Quick Start**](#-build--run-in-60-seconds) · [**📖 Usage Guide**](docs/USAGE.md) · [**🏗️ Architecture**](docs/ARCHITECTURE.md) · [**🔒 Security**](docs/SECURITY.md) · [**🗺️ Roadmap**](docs/ROADMAP.md) · [**📲 iPhone PWA**](https://earnerbaymalay.github.io/sideload/cypherchat/)
 
+> 📲 **Install on any device — Android, iPhone, or browser — from one place:** [**sideload**](https://earnerbaymalay.github.io/sideload/)
+
 </div>
 
 ---
