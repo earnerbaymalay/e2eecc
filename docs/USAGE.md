@@ -1,58 +1,68 @@
-# Usage Guide
+# Cypherchat usage guide
 
-## Getting Started
+Instructions for users and developers.
 
-### For Users
+---
 
-#### Installation
-1. **Get the APK** — Download from [GitHub Releases](https://github.com/earnerbaymalay/e2eecc/releases) or build from source
-2. **Install** — Allow "Install unknown apps" in Android settings, then install the APK
-3. **Launch** — Open Cypherchat
+## For users
 
-#### First Launch
-1. **Onboarding** — You'll see a brief intro to Cypherchat's privacy features
-2. **Key generation** — Your encryption keys are generated automatically via Android Keystore
-3. **Chat list** — You'll see an empty chat list with "No conversations yet"
+### Installation
 
-#### Starting a Conversation
-1. **Tap the + button** to create an invitation link
-2. **Share the link** securely with your contact (in person, via a different channel, or encrypted email)
-3. **Wait for them to accept** — once they accept the invitation, the chat appears
-4. **Start chatting** — messages are encrypted automatically
+1.  **Obtain the APK:** Download from [GitHub Releases](https://github.com/earnerbaymalay/e2eecc/releases) or build from source.
+2.  **Install:** Enable "Install unknown apps" in Android settings, then install the APK.
+3.  **Launch:** Open Cypherchat from your app drawer.
 
-#### Verifying a Contact
-> ⚠️ This feature is planned but not yet implemented.
+### First launch
 
-When key verification is available:
-1. Open the conversation
-2. Tap the contact name in the title bar
-3. Compare the key fingerprint with your contact (in person or via a trusted channel)
-4. If they match, mark the contact as "verified"
+1.  **Onboarding:** A brief introduction to Cypherchat's privacy features.
+2.  **Key generation:** Your encryption keys are automatically generated via Android Keystore.
+3.  **Chat list:** An empty chat list is displayed with "No conversations yet."
 
-#### Security Best Practices
-- 🔒 **Verify key fingerprints** with contacts you communicate with regularly
-- 📱 **Use a screen lock** on your device — your keys are protected by the device's TEE
-- 🔐 **Don't share invitation links publicly** — anyone with the link can connect to you
-- 🧹 **Delete conversations** you no longer need — data is encrypted at rest, but less data = less risk
-- 📴 **Cypherchat works offline** for viewing past messages — no internet needed to read your history
+### Starting a conversation
 
-### For Developers
+1.  **Tap the '+' button** to generate an invitation link.
+2.  **Share the link:** Securely send the link to your contact using an alternative, trusted channel (e.g., in person, encrypted email).
+3.  **Await acceptance:** Once your contact accepts the invitation, the chat will appear.
+4.  **Begin chatting:** Messages are automatically encrypted.
 
-#### Building from Source
+### Verifying a contact
+
+This feature is planned for future implementation. When available:
+1.  Open the conversation.
+2.  Tap the contact's name in the title bar.
+3.  Compare the key fingerprint with your contact, ideally in person or over a trusted channel.
+4.  If the fingerprints match, mark the contact as "verified."
+
+### Security best practices
+
+-   🔒   **Verify key fingerprints** with frequently contacted individuals.
+-   📱   **Use a screen lock** on your device; your keys are protected by the device's Trusted Execution Environment (TEE).
+-   🔐   **Do not share invitation links publicly;** anyone with the link can connect to you.
+-   🧹   **Delete conversations** you no longer need. Data is encrypted at rest, but minimizing stored data reduces risk.
+-   📴   **Cypherchat works offline** for viewing past messages; no internet is required to read your history.
+
+---
+
+## For developers
+
+### Building from source
+
 ```bash
 git clone https://github.com/earnerbaymalay/e2eecc.git
 cd e2eecc
 ```
 
-Open in Android Studio:
-1. **File → Open** → select the `e2eecc` directory
-2. **Sync Gradle** (automatic on open)
-3. **Run** on a device or emulator (Min SDK 24)
+Open the project in Android Studio:
+1.  **File → Open** and select the `e2eecc` directory.
+2.  **Sync Gradle** (typically automatic upon opening).
+3.  **Run** on a device or emulator (Minimum SDK 24).
 
-#### Project Structure
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the complete module breakdown.
+### Project structure
 
-#### Running Tests
+Refer to [ARCHITECTURE.md](ARCHITECTURE.md) for a comprehensive module breakdown.
+
+### Running tests
+
 ```bash
 # Unit tests
 ./gradlew test
@@ -60,65 +70,71 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the complete module breakdown.
 # Instrumentation tests (requires device/emulator)
 ./gradlew connectedAndroidTest
 
-# Lint
+# Lint checks
 ./gradlew lintDebug
 
 # Build release APK
 ./gradlew assembleRelease
 ```
 
-#### Debugging Crypto
+### Debugging cryptography
+
 ```bash
-# Enable debug logging (only in debug builds)
+# Enable debug logging (for debug builds only)
 adb shell setprop log.tag.Cypherchat VERBOSE
 
 # View logs
 adb logcat | grep Cypherchat
 ```
 
+---
+
 ## Configuration
 
-### Build Variants
-| Variant | Use Case | Features |
-|---|---|---|
-| `debug` | Development | Debug logging, no minification, fast build |
-| `release` | Production | No logging, ProGuard, resource shrinking |
+### Build variants
 
-### Minimum Requirements
-- Android 7.0+ (API 24)
-- 100 MB free storage
-- 2 GB RAM recommended
+| Variant   | Use Case    | Features                                     |
+|-----------|-------------|----------------------------------------------|
+| `debug`   | Development | Debug logging, no minification, fast build.  |
+| `release` | Production  | No logging, ProGuard, resource shrinking.    |
 
-## Troubleshooting
+### Minimum requirements
 
-| Problem | Solution |
-|---|---|
-| App crashes on launch | Check logcat for errors. Ensure Android Keystore is available (not a custom ROM with broken Keystore) |
-| Can't create invitation | Network required for SimpleX relay connection. Check internet |
-| Messages not sending | Alpha limitation — network layer not yet wired. This will show a placeholder error |
-| Database corruption | Reinstall. Database is tied to your device Keystore — can't be migrated |
-| Build fails | Ensure JDK 17, Android SDK 34, and sync Gradle |
-
-## Data and Privacy
-
-### What Cypherchat Stores
-- **Encrypted messages** — in SQLCipher database (unreadable without your device)
-- **Your keys** — in Android Keystore (non-exportable, hardware-bound)
-- **Contact public keys** — needed for encryption (not secret)
-
-### What Cypherchat Does NOT Store
-- Phone numbers
-- Usernames
-- Server accounts
-- Analytics or telemetry
-- Crash reports (no external reporting)
-
-### Uninstalling
-When you uninstall Cypherchat:
-- All messages are deleted (encrypted database is removed)
-- Keystore keys are orphaned (Android cleans them up eventually)
-- Nothing remains on any server
+-   Android 7.0+ (API 24)
+-   100 MB free storage
+-   2 GB RAM (recommended)
 
 ---
 
-*Your data. Your device. Your control.*
+## Troubleshooting
+
+See the separate `TROUBLESHOOTING.md` for common issues and solutions.
+
+---
+
+## Data and privacy
+
+### What Cypherchat stores
+
+-   **Encrypted messages:** Stored in an SQLCipher database, unreadable without your device.
+-   **Your keys:** Stored in Android Keystore, non-exportable and hardware-bound.
+-   **Contact public keys:** Essential for encryption, not considered secret.
+
+### What Cypherchat does not store
+
+-   Phone numbers
+-   Usernames
+-   Server accounts
+-   Analytics or telemetry data
+-   Crash reports (no external reporting)
+
+### Uninstalling
+
+When Cypherchat is uninstalled:
+-   All messages are deleted (encrypted database is removed).
+-   Keystore keys are orphaned (Android eventually cleans them up).
+-   No data remains on any server.
+
+---
+
+Your data. Your device. Your control.
