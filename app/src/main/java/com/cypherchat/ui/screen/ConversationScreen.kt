@@ -10,7 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.*
@@ -109,7 +109,7 @@ fun ConversationScreen(
                 },
                 actions = {
                     IconButton(onClick = { showFingerprint = !showFingerprint }) {
-                        Icon(Icons.Outlined.Lock, "Show key", tint = TextSecondary)
+                        Icon(Icons.Outlined.Lock, "Show security code", tint = TextSecondary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = CipherNavy)

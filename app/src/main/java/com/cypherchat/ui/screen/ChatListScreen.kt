@@ -208,7 +208,7 @@ private fun ChatRow(contact: ContactUi, lastMessage: String, unreadCount: Int, o
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(
-                        text = formatTimestamp(contact.lastActiveAt),
+                        text = formatTimestamp(contact.lastSeen),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (unreadCount > 0) CipherTeal else TextMuted
                     )

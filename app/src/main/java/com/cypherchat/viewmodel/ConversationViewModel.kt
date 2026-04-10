@@ -265,34 +265,15 @@ class ConversationViewModel(
     }
 
     fun markRead() {
-
-    fun clearError() {
-        _uiState.update { it.copy(error = null) }
-    }
         viewModelScope.launch(dispatchers.io) {
-
-    fun clearError() {
-        _uiState.update { it.copy(error = null) }
-    }
             messageDao.markConversationRead(conversationId)
-
-    fun clearError() {
-        _uiState.update { it.copy(error = null) }
-    }
         }
-
-    fun clearError() {
-        _uiState.update { it.copy(error = null) }
-    }
     }
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
 
-    /**
-     * Decrypts a MessageEntity for display.
-     */
     private fun decryptMessage(entity: MessageEntity): UiMessage {
         return try {
             val keyResult = KeyStoreManager.getMessageKey()
