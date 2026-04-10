@@ -1,0 +1,585 @@
+Good — I've now read `install.sh` in full (362 lines), both `settings.gradle.kts` files, and the complete Actions history across all three repos. I caught several additional things I missed before. Writing the final prompt now.
+
+---
+
+```
+You are an autonomous software engineer. Work agentically across three GitHub repositories — clone each, read every relevant file before touching anything, make all necessary fixes and improvements, then commit. Do not ask for permission between steps. Complete each repo fully before moving to the next. Use all available tools (file read, write, shell execution, grep, git).
+
+REPOS:
+  1. https://github.com/earnerbaymalay/aether        (Termux shell workspace — NO APK)
+  2. https://github.com/earnerbaymalay/cyph3rchat    (Kotlin/Compose Android app)
+  3. https://github.com/earnerbaymalay/Gloam         (Kotlin Multiplatform — Android + Desktop)
+
+For each repo, work on a branch named: fix/android-build-and-polish
+Commit message format: fix(scope): description | chore(scope): description | design(scope): description
+
+───────────────────────────────────────────────
+REPO 1 — aether
+TYPE: Termux Shell/Python workspace. No Gradle. No APK. No Android build step whatsoever.
+───────────────────────────────────────────────
+
+## STEP 1 — CI (CRITICAL)
+
+Open .github/workflows/ci.yml. It has a YAML syntax error on line 48 that has caused
+100% CI failure across all 21 runs. The entire file must be replaced with the correct
+minimal pipeline below. Do not preserve any Android/Gradle/JDK steps — none belong here.
+
+Replacement ci.yml:
+
+  name: Aether CI
+
+  on:
+    push:
+      branches: [main]
+    pull_request:
+      branches: [main]
+
+  jobs:
+    validate:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+
+        - name: Install shellcheck
+          run: sudo apt-get install -y shellcheck
+
+        - name: Lint all shell scripts
+          run: find . -name "*.sh" ! -path "./.git/*" -exec shellcheck --severity=warning {} \;
+
+        - name: Check Python syntax
+          run: find . -name "*.py" ! -path "./.git/*" -exec python3 -m py_compile {} \;
+
+        - name: Verify install.sh is executable
+          run: test -x install.sh || (echo "install.sh is not executable" && exit 1)
+
+After writing the file, validate it locally:
+  python3 -c "import yaml; yaml.safe_load(open('.github/workflows/ci.yml'))"
+If it fails validation, fix the indentation or structure until it passes before committing.
+
+## STEP 2 — install.sh code fixes
+
+Read install.sh in full first. Then apply these fixes:
+
+a) PREFIX guard — add this near the top, after set -e, before any use of $PREFIX:
+     if [ -z "$PREFIX" ]; then
+       echo "[ERROR] \$PREFIX is not set. This script must be run inside Termux."
+       exit 1
+     fi
+
+b) set -e + prompt() safety — the prompt() function returns exit code 1 when the
+   user answers 'n', which combined with set -e will abort the script silently on
+   any declined optional. Audit every bare call to prompt() that is NOT already
+   inside an `if` block and wrap it. Pattern to find and fix:
+     WRONG:  prompt "Install gum?"
+     CORRECT: if prompt "Install gum?"; then ... fi
+
+c) extras_installer.sh guard — the script calls:
+     bash "$DIR/scripts/extras_installer.sh" enable "$extra" 2>/dev/null
+   but this script may not exist or may not handle all extras. Change to:
+     if [ -f "$DIR/scripts/extras_installer.sh" ]; then
+       bash "$DIR/scripts/extras_installer.sh" enable "$extra" 2>/dev/null || true
+     else
+       warn "extras_installer.sh not found — skipping extra: $extra"
+     fi
+
+d) Model download error handling — the wget call has no error handling. Replace with:
+     if ! wget -O "$MODEL_FILE" "$MODEL_URL" 2>&1 | tail -5; then
+       warn "Model download failed. You can retry later with Aether's model manager."
+       rm -f "$MODEL_FILE"
+     else
+       info "Model downloaded to $MODEL_FILE"
+     fi
+
+e) bench.sh guard — at the bottom, the script calls bash "$DIR/bench.sh" directly.
+   Add a guard:
+     if [ -f "$DIR/bench.sh" ]; then
+       bash "$DIR/bench.sh"
+     else
+       warn "bench.sh not found — skipping benchmark"
+     fi
+
+f) settings.sh guard — same pattern. Any call to settings.sh or extras_installer.sh
+   without checking they exist should be guarded with [ -f ... ] || warn ... pattern.
+
+## STEP 3 — Repository cleanup
+
+a) Remove .bashrc and .gitconfig from the repo root (these are personal dev environment
+   files). Stage their deletion with git rm.
+
+b) Check if .gitmodules exists. If it does, inspect it. If it contains entries pointing
+   to paths that are not real submodule directories with a .git folder inside, delete
+   those stale entries. If .gitmodules is empty after cleanup, delete the file entirely.
+
+c) Append to .gitignore (do not remove existing entries, only append if not present):
+     __pycache__/
+     *.pyc
+     *.pyo
+     *.log
+     *.tmp
+     .env
+     .DS_Store
+     */.git
+
+## STEP 4 — Documentation
+
+a) README.md — move the Termux prerequisite note to BEFORE the Quick Start code block.
+   Add this exact warning in a callout or bold line immediately above the git clone:
+
+   > ⚠️ Install Termux from F-Droid only (https://f-droid.org/en/packages/com.termux/).
+   > The Play Store version has restricted permissions that will cause failures during
+   > package installation and file access.
+
+b) README.md — add a "What install.sh does" section after Quick Start that lists in plain
+   language what the script installs and where:
+   - Packages installed via pkg
+   - llama.cpp cloned and built at ~/llama.cpp/
+   - Models downloaded to ~/aether/models/
+   - Global shortcut written to $PREFIX/bin/ai
+   - Config/session state at ~/.aether/
+
+c) TROUBLESHOOTING.md — add or expand a section called "Common Termux Issues" covering:
+   1. Must run `termux-setup-storage` before install to enable storage access
+   2. Must run `pkg update && pkg upgrade` before install to avoid package conflicts
+   3. If llama.cpp build fails with "ninja: command not found" — run pkg install ninja
+   4. ARM64 model compatibility: Q4_K_M quantisation is the recommended balance for
+      devices with 6GB+ RAM; use Q2_K on 4GB devices; do not attempt 8B+ models on
+      devices with less than 6GB RAM
+   5. If `ai` command not found after install — run `source ~/.bashrc` or restart Termux
+
+───────────────────────────────────────────────
+REPO 2 — cyph3rchat
+TYPE: Kotlin/Jetpack Compose multi-module Android app
+Modules: :app, :core:common, :core:crypto, :core:database, :core:network
+───────────────────────────────────────────────
+
+## STEP 1 — Gradle build fixes (CRITICAL)
+
+a) Root build.gradle.kts — replace the deprecated clean task:
+     CURRENT:  delete(rootProject.buildDir)
+     REPLACE:  delete(layout.buildDirectory)
+
+b) settings.gradle.kts — the rootProject.name is "Cypherchat" but the repo is called
+   "cyph3rchat". This creates confusion in build output and release artifacts. Change:
+     rootProject.name = "Cyph3rChat"
+
+c) Verify gradle/libs.versions.toml exists and contains valid entries for all four
+   plugin aliases referenced in root build.gradle.kts:
+     - android.application
+     - android.library
+     - kotlin.android
+     - ksp
+   If any are missing, add them with appropriate current stable versions:
+     agp = "8.4.0"
+     kotlin = "2.0.0"
+     ksp = "2.0.0-1.0.21"
+
+d) gradle/wrapper/gradle-wrapper.properties — check the distributionUrl. If it references
+   a Gradle version older than 8.4, update it to:
+     distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-bin.zip
+
+e) JitPack in settings.gradle.kts — a JitPack maven block is present. Find what dependency
+   requires it. If it is SQLCipher or any security-critical library that is now available
+   on Maven Central, remove the JitPack entry and update the dependency to use the
+   Maven Central coordinates instead. JitPack should not be used for security libraries
+   due to reproducibility concerns.
+
+## STEP 2 — Security fixes (CRITICAL)
+
+a) core/database — find the Room database builder. Verify it calls openHelperFactory()
+   with a SQLCipher SupportFactory. The pattern MUST be:
+
+     val passphrase: ByteArray = SQLiteDatabase.getBytes(passphraseChars)
+     val factory = SupportFactory(passphrase)
+     Room.databaseBuilder(context, CypherChatDatabase::class.java, "cypherchat.db")
+         .openHelperFactory(factory)
+         .build()
+
+   If openHelperFactory is missing, add it. If the database is being built without
+   encryption, this is the single most critical bug in the entire codebase — fix it first.
+   After use, zero out the passphrase array: Arrays.fill(passphrase, 0)
+
+b) core/network — find the SimplexTransport interface and all its implementations.
+   If the implementation bodies are stubs (empty, returning null, or TODO), make them
+   throw explicitly and loudly so no future developer silently ships unimplemented
+   transport thinking it works:
+
+     override fun send(payload: ByteArray): Result<Unit> {
+         throw NotImplementedError(
+             "SimplexTransport: network layer not implemented. " +
+             "Messages cannot be transmitted. Do not ship without implementing this."
+         )
+     }
+
+   Also add a // STUB: NOT IMPLEMENTED comment at the top of the implementation file.
+
+## STEP 3 — Runtime stability fixes
+
+a) Koin module audit — find all Koin module declarations (likely in app/di/ or similar).
+   Verify every ViewModel is declared with viewModel { } not single { } or factory { }.
+   The pattern for ViewModels with constructor dependencies must be:
+     viewModel { ChatListViewModel(get(), get()) }
+   Fix any ViewModel registered incorrectly.
+
+b) Room entity type audit — search all @Entity data classes and their corresponding
+   @Dao interfaces for any column declared as Long in the entity but read as Int
+   (or vice versa) in queries or UI code. The UnreadCount column was recently fixed
+   but audit all columns: timestamps, IDs, counters. All Long columns must be Long
+   everywhere through the entire call chain.
+
+c) @OptIn audit — search all .kt files in app/ for combinedClickable. For every
+   function containing it, verify @OptIn(ExperimentalFoundationApi::class) is present
+   on either the function itself or the file. Fix any missing annotation.
+
+d) Experimental API future-proofing — check the Compose BOM version in libs.versions.toml.
+   If it is below 2024.09.00, update it to the latest stable BOM and re-verify all
+   experimental API usages are still annotated correctly after the update.
+
+## STEP 4 — CI workflow
+
+Read .github/workflows/ci.yml fully before editing. Apply:
+
+a) Java version — ensure setup-java uses:
+     java-version: '17'
+     distribution: 'temurin'
+
+b) Gradle wrapper permissions — ensure there is a step:
+     - name: Make gradlew executable
+       run: chmod +x ./gradlew
+
+c) Add debug APK build and upload:
+     - name: Build debug APK
+       run: ./gradlew :app:assembleDebug
+
+     - name: Upload debug APK
+       uses: actions/upload-artifact@v4
+       with:
+         name: cyph3rchat-debug-${{ github.sha }}
+         path: app/build/outputs/apk/debug/*.apk
+         retention-days: 14
+
+d) Release build — if assembleRelease is present in the workflow, wrap it in a condition:
+     if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+   This prevents release builds running on every push (they will fail without a keystore).
+
+e) Pin all action versions to explicit tags (not @main or @latest):
+   Use actions/checkout@v4, actions/setup-java@v4, actions/upload-artifact@v4
+
+f) Add continue-on-error: false to all build and test steps (make failures explicit).
+
+## STEP 5 — Design and UX (Android)
+
+a) Launcher icon — find app/src/main/res/mipmap-*/ic_launcher.* and ic_launcher_round.*.
+   If they are the default Android Studio green robot icons, replace them with a proper
+   vector-based adaptive icon. Create ic_launcher_foreground.xml with:
+   - Background: #0D1117 (dark navy)
+   - Foreground: a stylized padlock shape in #00D4FF (cipher blue) with a subtle
+     double-helix or chain detail suggesting the Double Ratchet protocol
+   Create ic_launcher_background.xml with fill color #0D1117.
+   Update mipmap-anydpi-v26/ic_launcher.xml and ic_launcher_round.xml to use
+   the adaptive icon format.
+
+b) Color system — open or create app/src/main/res/values/colors.xml.
+   Define the full brand palette:
+     <color name="cipher_blue">#00D4FF</color>
+     <color name="cipher_dark_bg">#0D1117</color>
+     <color name="cipher_surface">#161B22</color>
+     <color name="cipher_on_surface">#C9D1D9</color>
+     <color name="cipher_accent">#58A6FF</color>
+     <color name="cipher_error">#F85149</color>
+     <color name="cipher_success">#3FB950</color>
+   Then update app/src/main/res/values/themes.xml to apply these as the Material3
+   color scheme (colorPrimary, colorPrimaryContainer, colorSurface, colorBackground, etc).
+
+c) ConversationScreen — add a persistent small badge in the TopAppBar:
+     Row(verticalAlignment = Alignment.CenterVertically) {
+         Icon(Icons.Default.Lock, contentDescription = "E2EE", modifier = Modifier.size(14.dp),
+              tint = Color(0xFF3FB950))
+         Spacer(modifier = Modifier.width(4.dp))
+         Text("E2EE", style = MaterialTheme.typography.labelSmall,
+              color = Color(0xFF3FB950))
+     }
+   This should be visible at all times when in a conversation.
+
+d) OnboardingScreen — the current onboarding is functional but visually cold. Add:
+   - An animated pulsing lock icon (use Compose animate* APIs, pulse scale 1.0→1.1→1.0
+     on a 2-second loop) as the hero element
+   - The three core value propositions as icon+text rows:
+     🔑 No accounts — just a keypair
+     🔒 Zero-knowledge relay
+     📵 Works without internet (local key exchange)
+
+e) README.md — replace all ASCII art wireframes with properly structured SVG mockups
+   in docs/media/. Create at minimum:
+   - screenshot_chat_list.svg: shows the chat list screen with the brand colors
+   - screenshot_conversation.svg: shows a conversation with the E2EE badge
+   - screenshot_onboarding.svg: shows the onboarding with the lock icon
+   Update README.md img references to point to these files.
+   The hero.svg and screenshot.svg already exist — verify they reflect the actual
+   brand colors (#0D1117 background, #00D4FF accents) not generic placeholder colors.
+
+───────────────────────────────────────────────
+REPO 3 — Gloam
+TYPE: Kotlin Multiplatform (Compose Multiplatform)
+IMPORTANT: settings.gradle.kts only includes :composeApp — NOT :app.
+The app/ folder in the repo root is NOT wired to Gradle and is dead code.
+Focus ALL Android fixes on the composeApp module.
+───────────────────────────────────────────────
+
+## STEP 0 — CRITICAL STRUCTURAL AUDIT (do this before anything else)
+
+a) Read settings.gradle.kts. Confirm it only includes(":composeApp").
+   Then inspect the app/ folder. Determine one of:
+   - If app/ is completely empty or contains only legacy abandoned code with no
+     meaningful source → delete it entirely with git rm -r app/ and update README
+     to remove any references to an app/ module.
+   - If app/ contains Android-specific code that should be built → add include(":app")
+     to settings.gradle.kts and fix it. (This is less likely given CI passes without it.)
+   Make this determination, act on it, and document it in a commit message.
+
+b) The README Build from Source section says:
+     "Open in Android Studio → Sync Gradle → Run"
+   and refers to an app/ module. Update this to correctly say:
+     "The Android app is the composeApp module. Open in Android Studio → Sync Gradle →
+      select the composeApp run configuration → Run."
+
+c) settings.gradle.kts is missing RepositoriesMode.FAIL_ON_PROJECT_REPOS. Add it:
+     dependencyResolutionManagement {
+         repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+         repositories {
+             google()
+             mavenCentral()
+         }
+     }
+
+## STEP 1 — Gradle build fixes
+
+a) Root build.gradle.kts — same as cyph3rchat: replace deprecated clean task:
+     delete(rootProject.buildDir) → delete(layout.buildDirectory)
+
+b) gradle/wrapper/gradle-wrapper.properties — verify Gradle 8.4+. Update if needed:
+     distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-bin.zip
+
+c) composeApp/build.gradle.kts — open and verify:
+   - Android target has compileSdk=34, minSdk=26, targetSdk=34
+   - kotlinx-datetime is declared as a commonMain dependency (NOT java.time)
+   - SQLCipher is declared as an androidMain dependency:
+       androidMain.dependencies {
+           implementation("net.zetetic:android-database-sqlcipher:4.5.4")
+           implementation("androidx.sqlite:sqlite-ktx:2.4.0")
+       }
+   - All plugin aliases in the plugins {} block have matching entries in
+     gradle/libs.versions.toml
+   - Kotlin and KSP versions are compatible (they must match exactly)
+
+## STEP 2 — Critical bug fixes
+
+a) Room singleton circular recursion — find the GloamDatabase companion object.
+   The getDatabase() function must NEVER call getDatabase() inside the builder.
+   The correct pattern is:
+     companion object {
+         @Volatile private var INSTANCE: GloamDatabase? = null
+
+         fun getDatabase(context: Context, passphrase: ByteArray): GloamDatabase =
+             INSTANCE ?: synchronized(this) {
+                 INSTANCE ?: run {
+                     val factory = SupportFactory(passphrase)
+                     Room.databaseBuilder(
+                         context.applicationContext,
+                         GloamDatabase::class.java,
+                         "gloam.db"
+                     )
+                     .openHelperFactory(factory)
+                     .build()
+                     .also { INSTANCE = it }
+                 }
+             }
+     }
+   Fix any circular call pattern. Also ensure context.applicationContext is used,
+   not the raw Activity context (to prevent memory leaks).
+
+b) SQLCipher SupportFactory — verify openHelperFactory(SupportFactory(passphrase)) is
+   present. If missing, this is a critical security failure — the database is not encrypted.
+
+c) ViewModelFactory — find GloamViewModel. If it has constructor parameters (repository,
+   etc.) and the Activity/Fragment creates it with ViewModelProvider(this) without a
+   Factory, add a factory. If this is a Compose Multiplatform app using the Compose
+   ViewModel from lifecycle-viewmodel-compose, verify it uses viewModel { GloamViewModel(get()) }
+   with Koin or a proper factory pattern.
+
+d) java.time sweep — run this search across the entire repo:
+     grep -r "java.time\|java.text.SimpleDateFormat\|DateTimeFormatter\|LocalDate\.\|LocalDateTime\.\|ZonedDateTime\." \
+       composeApp/src/commonMain/ --include="*.kt"
+   For every match, replace with kotlinx.datetime equivalents:
+   - java.time.LocalDate → kotlinx.datetime.LocalDate
+   - LocalDate.now() → Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+   - DateTimeFormatter → use format() from kotlinx.datetime or a shared expect/actual
+   - java.time.ZonedDateTime → kotlinx.datetime.Instant + TimeZone
+
+e) expect/actual audit — find all files in commonMain with the `expect` keyword.
+   For each expect declaration, verify there is a matching `actual` in BOTH:
+   - composeApp/src/androidMain/
+   - composeApp/src/desktopMain/ (or jvmMain/)
+   Any missing actual will cause a compilation failure for that platform target.
+   Add stub actuals if needed with a // TODO comment.
+
+## STEP 3 — Security fixes
+
+a) PIN hashing — find where the PIN is hashed (likely in the settings or auth module).
+   If it uses raw SHA-256 (MessageDigest.getInstance("SHA-256")) with no salt,
+   replace with PBKDF2:
+
+     fun hashPin(pin: String): Pair<ByteArray, ByteArray> {
+         val salt = ByteArray(32).also { SecureRandom().nextBytes(it) }
+         val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+         val spec = PBEKeySpec(pin.toCharArray(), salt, 100_000, 256)
+         val hash = factory.generateSecret(spec).encoded
+         Arrays.fill(spec.password, '\u0000')
+         return Pair(hash, salt)
+     }
+
+     fun verifyPin(pin: String, storedHash: ByteArray, storedSalt: ByteArray): Boolean {
+         val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+         val spec = PBEKeySpec(pin.toCharArray(), storedSalt, 100_000, 256)
+         val testHash = factory.generateSecret(spec).encoded
+         Arrays.fill(spec.password, '\u0000')
+         return MessageDigest.isEqual(testHash, storedHash)
+     }
+
+   Store both the hash and salt. Update all PIN verification call sites.
+   This is an Android-only implementation — mark it in androidMain if the PIN
+   feature is Android-specific.
+
+b) Desktop encryption honesty — find any database builder in desktopMain.
+   If it does NOT use SQLCipher (it almost certainly cannot on desktop), add this
+   comment block at the top of the file:
+
+     // SECURITY NOTE: Desktop target uses standard SQLite without encryption.
+     // Journal entries are stored in plaintext on desktop.
+     // Do not rely on this target for sensitive data storage in production
+     // until desktop encryption is implemented.
+
+   Also add a visible in-app warning on Desktop: a Banner or Snackbar on first launch
+   stating "Desktop version: data is not encrypted at rest."
+
+## STEP 4 — Location permission and fallback
+
+a) Find where location is requested for the NOAA solar calculator.
+   Implement a complete permission + fallback flow:
+
+   1. On first launch, request ACCESS_COARSE_LOCATION (not FINE — coarse is sufficient
+      for sunrise/sunset within a few minutes of accuracy).
+
+   2. If permission is granted, use the device location.
+
+   3. If permission is denied (permanently or temporarily), fall back to:
+      - Check if manual coordinates are stored in DataStore/SharedPreferences
+      - If not set, use defaults: lat = -31.9505, lon = 115.8605 (Perth, Western Australia)
+      - Show a non-blocking Snackbar: "Location not available — using Perth, AU as fallback.
+        Update in Settings."
+
+   4. In the Settings screen, add a "Solar Location" entry with a text field for
+      manual latitude/longitude override. Persist these to DataStore.
+
+b) AndroidManifest.xml — verify ACCESS_COARSE_LOCATION permission is declared.
+   If it is missing, add it.
+
+## STEP 5 — CI workflow
+
+Read .github/workflows/ci.yml before editing. Apply:
+
+a) Java setup: version 17, distribution temurin
+
+b) Make gradlew executable:
+     - run: chmod +x ./gradlew
+
+c) Android debug APK — the Android target in composeApp is built via:
+     ./gradlew :composeApp:assembleDebug
+   Add this step and upload the artifact:
+     - name: Build Android debug APK
+       run: ./gradlew :composeApp:assembleDebug
+
+     - name: Upload Android APK
+       uses: actions/upload-artifact@v4
+       with:
+         name: gloam-android-debug-${{ github.sha }}
+         path: composeApp/build/outputs/apk/debug/*.apk
+         retention-days: 14
+
+d) Pin all action versions to explicit tags.
+
+e) Gradle cache — add caching to speed up CI:
+     - uses: actions/cache@v4
+       with:
+         path: |
+           ~/.gradle/caches
+           ~/.gradle/wrapper
+         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts', '**/libs.versions.toml') }}
+         restore-keys: ${{ runner.os }}-gradle-
+
+## STEP 6 — Design and UX (Android target)
+
+a) Launcher icon — find the adaptive icon files in composeApp/src/androidMain/res/.
+   If they are generic defaults, replace with a vector adaptive icon:
+   - ic_launcher_foreground.xml: a crescent moon on the left transitioning to a
+     sun on the right, split diagonally. Warm amber (#F59E0B) for the sun side,
+     deep violet (#7C3AED) for the moon side.
+   - ic_launcher_background.xml: solid #0F172A (dark slate)
+   - Update mipmap-anydpi-v26/ic_launcher.xml and ic_launcher_round.xml accordingly.
+
+b) Solar theme color system — find where theme colors are defined.
+   Add or update a SolarTheme.kt (or equivalent) with four phase palettes:
+     Dawn:  primary=#F59E0B  background=#1C0F00  surface=#2D1A00
+     Day:   primary=#38BDF8  background=#0C1A2E  surface=#162033
+     Dusk:  primary=#7C3AED  background=#12071E  surface=#1E0F30
+     Night: primary=#6366F1  background=#0F0F1A  surface=#18182A
+   Apply the appropriate palette based on the current solar phase state.
+   The phase-based theme switch is the entire point of this app — it must be
+   visually obvious and beautiful, not subtle.
+
+c) HomeScreen CBT prompt card — improve visual treatment:
+   - Wrap the prompt in a Card with 12dp corner radius, 2dp elevation
+   - Add 20dp padding inside the card
+   - Display the current solar phase label (🌅 Dawn / ☀️ Day / 🌇 Dusk / 🌙 Night)
+     as a small chip above the prompt text
+   - The prompt text should use MaterialTheme.typography.bodyLarge, not a small text style
+   - Add a subtle divider between the prompt and the mood selector
+
+d) CalendarScreen heatmap — the year-in-pixels grid is the flagship feature. Ensure:
+   - 5-step color gradient from the current theme's surface color (no data) through
+     the mood scale to the primary color (best mood)
+   - Each cell is at least 12dp × 12dp with 1dp spacing
+   - A legend below the grid: No data → 😞 → 😐 → 🙂 → 😊
+   - Month labels above each column group
+   - The grid is scrollable horizontally if it doesn't fit the screen
+
+e) Notifications — find where notification scheduling happens.
+   Add to AndroidManifest.xml if missing:
+     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+   In Settings screen, add a notification permission request using
+   ActivityResultContracts.RequestPermission() for Android 13+. Show the system
+   permission dialog only if not already granted. If denied, hide the notifications
+   toggle and show a message: "Enable notifications in system Settings to use reminders."
+
+f) README.md — replace ASCII art wireframes with SVG mockups in docs/media/ that
+   accurately reflect the solar phase themes (show all four color states if possible).
+   The year-in-pixels heatmap must be shown as a real visual, not text art.
+   Update hero.svg to use the actual brand color palette.
+
+───────────────────────────────────────────────
+SHARED RULES (apply to all three repos)
+───────────────────────────────────────────────
+
+1. Do NOT change the core purpose, concept, or architecture of any app.
+2. Do NOT add external analytics, telemetry, crash reporting, or cloud dependencies.
+3. Do NOT add features beyond what is described — fix and polish only.
+4. Do NOT break existing passing CI runs for cyph3rchat or Gloam.
+5. After all changes in each repo, run the full build one final time before pushing:
+   - aether: shellcheck on all .sh, python3 -m py_compile on all .py
+   - cyph3rchat: ./gradlew :app:assembleDebug
+   - Gloam: ./gradlew :composeApp:assembleDebug
+6. Commit each logical fix as its own commit. Do not batch everything into one commit.
+7. After completing all three repos, output a summary listing:
+   - Every file changed
+   - What was changed and why
+   - Any issue found that could not be fixed (and why)
+```
