@@ -11,11 +11,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://jitpack.io") }
     }
 }
 
-rootProject.name = "Cypherchat"
+rootProject.name = "Cyph3rChat"
 
 include(":app")
 include(":core:common")
