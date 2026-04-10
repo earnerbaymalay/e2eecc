@@ -15,6 +15,10 @@
 
 ![Cyph3rChat Crypto](docs/media/hero.svg)
 
+---
+
+![Cyph3rChat Screenshots](docs/media/screenshot.svg)
+
 ## What is Cyph3rChat?
 
 **Cyph3rChat encrypts every message using the Double Ratchet protocol and AES-256-GCM. Instead of creating an account, you generate a unique keypair. Messages are encrypted on your device before transmission, ensuring the relay server only handles ciphertext and has no knowledge of sender or recipient identities.**
