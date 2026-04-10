@@ -109,7 +109,7 @@ fun ConversationScreen(
                 },
                 actions = {
                     IconButton(onClick = { showFingerprint = !showFingerprint }) {
-                        Icon(Icons.Default.Key, "Show fingerprint", tint = TextSecondary)
+                        Icon(Icons.Outlined.Lock, "Show key", tint = TextSecondary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = CipherNavy)
