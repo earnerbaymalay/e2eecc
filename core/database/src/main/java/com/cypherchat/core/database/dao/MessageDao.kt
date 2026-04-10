@@ -1,5 +1,6 @@
 package com.cypherchat.core.database.dao
 
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -9,8 +10,8 @@ import com.cypherchat.core.database.entity.MessageEntity
 import kotlinx.coroutines.flow.Flow
 
 data class LastMessagePreview(
-    val conversationId: String,
-    val previewText: String
+    @ColumnInfo(name = "conversation_id") val conversationId: String,
+    @ColumnInfo(name = "previewText") val previewText: String
 )
 
 @Dao
