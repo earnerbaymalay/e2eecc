@@ -1,0 +1,27 @@
+<svg width="360" height="640" xmlns="http://www.w3.org/2000/svg">
+  <rect width="360" height="640" fill="#0D1117"/>
+  <!-- Top Bar -->
+  <rect width="360" height="56" fill="#0D1117"/>
+  <text x="56" y="38" font-family="sans-serif" font-size="20" fill="#C9D1D9" font-weight="bold">Cyph3rChat</text>
+  <path d="M24,24c-2.2,0-4,1.8-4,4v2h-1c-0.5,0-1,0.5-1,1v8c0,0.5,0.5,1,1,1h10c0.5,0,1-0.5,1-1v-8c0-0.5-0.5-1-1-1h-1v-2C28,25.8,26.2,24,24,24z M22,30c0-1.1,0.9-2,2-2s2,0.9,2,2v2h-4V30z" fill="#00D4FF" transform="scale(1.5, 1.5) translate(-10, -10)"/>
+  <!-- Chat Rows -->
+  <g transform="translate(0, 64)">
+    <!-- Row 1 -->
+    <circle cx="40" cy="36" r="24" fill="#161B22"/>
+    <text x="40" y="42" font-family="sans-serif" font-size="18" fill="#00D4FF" text-anchor="middle">A</text>
+    <text x="80" y="32" font-family="sans-serif" font-size="16" fill="#C9D1D9" font-weight="bold">Alex K</text>
+    <text x="80" y="52" font-family="sans-serif" font-size="14" fill="#8B93A8">✓ Sounds good — I'll send the files...</text>
+    <line x1="80" y1="72" x2="360" y2="72" stroke="#2A3145" stroke-width="0.5"/>
+  </g>
+  <g transform="translate(0, 144)">
+    <!-- Row 2 -->
+    <circle cx="40" cy="36" r="24" fill="#161B22"/>
+    <text x="40" y="42" font-family="sans-serif" font-size="18" fill="#00D4FF" text-anchor="middle">M</text>
+    <text x="80" y="32" font-family="sans-serif" font-size="16" fill="#C9D1D9" font-weight="bold">Morgan</text>
+    <text x="80" y="52" font-family="sans-serif" font-size="14" fill="#8B93A8">Thanks for sharing that link</text>
+    <line x1="80" y1="72" x2="360" y2="72" stroke="#2A3145" stroke-width="0.5"/>
+  </g>
+  <!-- Floating Action Button -->
+  <circle cx="300" cy="580" r="28" fill="#00D4FF"/>
+  <path d="M300,568v24M288,580h24" stroke="#0D1117" stroke-width="3" fill="none"/>
+</svg>

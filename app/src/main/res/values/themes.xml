@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Cypherchat" parent="android:Theme.Material.Light.NoActionBar" />
-</resources>
+    <style name="Theme.Cyph3rChat" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/cipher_blue</item>
+        <item name="colorOnPrimary">@color/cipher_dark_bg</item>
+        <item name="colorPrimaryContainer">@color/cipher_surface</item>
+        <item name="colorOnPrimaryContainer">@color/cipher_on_surface</item>
+        <item name="colorSecondary">@color/cipher_accent</item>
+        <item name="colorOnSecondary">@color/cipher_dark_bg</item>
+        <item name="colorSurface">@color/cipher_surface</item>
+        <item name="colorOnSurface">@color/cipher_on_surface</item>
+        <item name="android:windowBackground">@color/cipher_dark_bg</item>
+        <item name="android:statusBarColor">@color/cipher_dark_bg</item>
+    </style>
 
+    <!-- Legacy support -->
+    <style name="Theme.Cypherchat" parent="Theme.Cyph3rChat" />
+</resources>

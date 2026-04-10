@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Stylized padlock for Cyph3rChat icon -->
+    <path
+        android:fillColor="#00D4FF"
+        android:pathData="M54,24c-8.8,0-16,7.2-16,16v8h-4c-2.2,0-4,1.8-4,4v32c0,2.2,1.8,4,4,4h40c2.2,0,4-1.8,4-4V52c0-2.2-1.8-4-4-4h-4v-8C70,31.2,62.8,24,54,24z M44,40c0-5.5,4.5-10,10-10s10,4.5,10,10v8H44V40z M54,64c3.3,0,6,2.7,6,6s-2.7,6-6,6s-6-2.7-6-6S50.7,64,54,64z"/>
+</vector>

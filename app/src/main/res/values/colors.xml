@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="cipher_blue">#00D4FF</color>
+    <color name="cipher_dark_bg">#0D1117</color>
+    <color name="cipher_surface">#161B22</color>
+    <color name="cipher_on_surface">#C9D1D9</color>
+    <color name="cipher_accent">#58A6FF</color>
+    <color name="cipher_error">#F85149</color>
+    <color name="cipher_success">#3FB950</color>
+</resources>

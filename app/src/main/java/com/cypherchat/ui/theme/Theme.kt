@@ -10,25 +10,25 @@ import androidx.core.view.WindowCompat
 
 // Cypherchat always uses a dark theme — privacy-first apps don't do light mode
 private val DarkColors = darkColorScheme(
-    primary            = CipherTeal,
-    onPrimary          = CipherBlack,
-    primaryContainer   = CipherTealDim,
-    onPrimaryContainer = TextPrimary,
-    secondary          = CipherTealDim,
-    onSecondary        = TextPrimary,
-    background         = CipherNavy,
-    onBackground       = TextPrimary,
+    primary            = CipherBlue,
+    onPrimary          = CipherDarkBg,
+    primaryContainer   = CipherSurface,
+    onPrimaryContainer = CipherOnSurface,
+    secondary          = CipherAccent,
+    onSecondary        = CipherDarkBg,
+    background         = CipherDarkBg,
+    onBackground       = CipherOnSurface,
     surface            = CipherSurface,
-    onSurface          = TextPrimary,
-    surfaceVariant     = CipherCard,
+    onSurface          = CipherOnSurface,
+    surfaceVariant     = CipherSurface,
     onSurfaceVariant   = TextSecondary,
     outline            = CipherBorder,
-    error              = CipherRed,
-    onError            = TextPrimary,
+    error              = CipherError,
+    onError            = CipherOnSurface,
 )
 
 @Composable
-fun CypherchatTheme(content: @Composable () -> Unit) {
+fun Cyph3rChatTheme(content: @Composable () -> Unit) {
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {

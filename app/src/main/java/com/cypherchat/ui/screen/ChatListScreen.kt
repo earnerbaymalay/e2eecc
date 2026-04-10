@@ -74,7 +74,7 @@ fun ChatListScreen(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(Icons.Outlined.Lock, null, tint = CipherTeal, modifier = Modifier.size(18.dp))
-                        Text("Cypherchat", style = MaterialTheme.typography.titleLarge, color = TextPrimary)
+                        Text("Cyph3rChat", style = MaterialTheme.typography.titleLarge, color = TextPrimary)
                     }
                 },
                 actions = {

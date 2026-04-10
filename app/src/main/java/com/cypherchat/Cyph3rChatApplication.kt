@@ -13,7 +13,7 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 
-class CypherchatApplication : Application() {
+class Cyph3rChatApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
@@ -21,7 +21,7 @@ class CypherchatApplication : Application() {
 
         startKoin {
             androidLogger()
-            androidContext(this@CypherchatApplication)
+            androidContext(this@Cyph3rChatApplication)
             modules(coreModule, databaseModule, viewModelModule)
         }
     }

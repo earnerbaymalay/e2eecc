@@ -2,10 +2,10 @@ name: Cyph3rChat CI/CD
 
 on:
   push:
-    branches: [ main ]
-    tags: [ 'v*' ]
+    branches: [main]
+    tags: ['v*']
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 env:
@@ -13,7 +13,6 @@ env:
   GRADLE_OPTS: -Dorg.gradle.parallel=true
 
 jobs:
-  # ── Android Build ──
   android:
     name: Android Build
     runs-on: ubuntu-latest
@@ -30,29 +29,20 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android SDK components
-        run: |
-          sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
-
-      - name: Grant execute permission
-        run: chmod +x gradlew
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+        continue-on-error: false
 
       - name: Build debug APK
-        run: |
-          ./gradlew app:assembleDebug --no-daemon --stacktrace
-          mkdir -p build-artifacts
-          find app/build/outputs/apk/debug -name "*.apk" -exec cp {} build-artifacts/cypherchat.apk \; -quit
+        run: ./gradlew :app:assembleDebug
+        continue-on-error: false
 
-      - name: Upload APK
-        if: always()
+      - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: cypherchat-android-apk
-          path: build-artifacts/cypherchat.apk
-          retention-days: 30
+          name: cyph3rchat-debug-${{ github.sha }}
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 14
 
       - name: Upload test results
         if: always()
@@ -70,11 +60,10 @@ jobs:
           path: '**/build/reports/lint-results-debug.html'
           retention-days: 14
 
-  # ── Create GitHub Release ──
   release:
     name: Create Release
     needs: [android]
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -83,7 +72,7 @@ jobs:
       - name: Download APK
         uses: actions/download-artifact@v4
         with:
-          name: cypherchat-android-apk
+          name: cyph3rchat-debug-${{ github.sha }}
           path: artifacts
 
       - name: List artifacts

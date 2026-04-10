@@ -21,7 +21,7 @@ private object Routes {
 }
 
 @Composable
-fun CypherchatNavigation(
+fun Cyph3rChatNavigation(
     startAtChatList: Boolean = false,
     onOnboardingComplete: () -> Unit = {}
 ) {

@@ -68,7 +68,7 @@ Plaintext messages are never written to disk; only ciphertext is stored. Chain k
 ```
 cyph3rchat/
 ├── app/                          # Jetpack Compose UI, Koin DI
-│   ├── CypherchatApplication
+│   ├── Cyph3rChatApplication
 │   ├── MainActivity              # NavHost, PIN lock, JSON export
 │   └── ui/screen/
 │       ├── OnboardingScreen
@@ -86,28 +86,13 @@ cyph3rchat/
 
 ## Screens & Workflow
 
-```
-Onboarding                       Chat List
-┌─────────────────┐              ┌─────────────────┐
-│  🛡️ Welcome     │              │  🔒 Cyph3rChat  │
-│                 │              │                 │
-│ No accounts.    │              │  [+] New Chat   │
-│ No servers.     │              │                 │
-│ No phone nums.  │              │  No conversations│
-│                 │              │  yet.            │
-│ [Get Started]   │              │                 │
-└─────────────────┘              └─────────────────┘
+<div align="center">
 
-Conversation                     Settings
-┌─────────────────┐              ┌─────────────────┐
-│ 🔒 Alice        │              │ 🔑 Key Fingerprint│
-│                 │              │  A1:B2:C3:...    │
-│ [Encrypted msg] │              │                 │
-│   [Encrypted]   │              │ 📤 Export Chat   │
-│                 │              │                 │
-│ [Type message]  │              │ 🗑️ Delete All   │
-└─────────────────┘              └─────────────────┘
-```
+| Onboarding | Chat List | Conversation |
+|------------|-----------|--------------|
+| ![Onboarding](docs/media/screenshot_onboarding.svg) | ![Chat List](docs/media/screenshot_chat_list.svg) | ![Conversation](docs/media/screenshot_conversation.svg) |
+
+</div>
 
 ### Starting a Conversation
 

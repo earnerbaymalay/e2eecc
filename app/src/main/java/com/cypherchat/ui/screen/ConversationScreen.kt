@@ -58,13 +58,25 @@ fun ConversationScreen(
                     }
                 },
                 title = {
-                    Column(horizontalAlignment = Alignment.Start) {
-                        Text(uiState.contactName, style = MaterialTheme.typography.titleMedium, color = TextPrimary)
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(modifier = Modifier.size(8.dp).background(CipherTeal, CircleShape))
-                            Spacer(Modifier.width(4.dp))
-                            Text("End-to-end encrypted", style = MaterialTheme.typography.labelSmall, color = CipherTeal)
-                        }
+                    Text(uiState.contactName, style = MaterialTheme.typography.titleMedium, color = TextPrimary)
+                },
+                actions = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(end = 12.dp)
+                    ) {
+                        Icon(
+                            imageVector = androidx.compose.material.icons.filled.Lock,
+                            contentDescription = "E2EE",
+                            modifier = Modifier.size(14.dp),
+                            tint = androidx.compose.ui.graphics.Color(0xFF3FB950)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "E2EE",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = androidx.compose.ui.graphics.Color(0xFF3FB950)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = CipherNavy)
