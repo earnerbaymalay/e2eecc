@@ -67,27 +67,29 @@ object AesGcmCipher {
         envelope: ByteArray,
         key: SecretKey,
         aad: ByteArray = ByteArray(0)
-    ): SecureResult<ByteArray> = try {
-        if (envelope.size < 1 + IV_SIZE + 16) {
-            return SecureResult.Failure(CypherError.CryptoError("Envelope too short"))
+    ): SecureResult<ByteArray> {
+        return try {
+            if (envelope.size < 1 + IV_SIZE + 16) {
+                return SecureResult.Failure(CypherError.CryptoError("Envelope too short"))
+            }
+            if (envelope[0] != VERSION) {
+                return SecureResult.Failure(CypherError.CryptoError("Unknown envelope version ${envelope[0]}"))
+            }
+
+            val iv = envelope.copyOfRange(1, 1 + IV_SIZE)
+            val ct = envelope.copyOfRange(1 + IV_SIZE, envelope.size)
+
+            val plaintext = Cipher.getInstance(ALGORITHM).run {
+                init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(TAG_SIZE, iv))
+                if (aad.isNotEmpty()) updateAAD(aad)
+                doFinal(ct)
+            }
+
+            iv.fill(0)
+
+            SecureResult.Success(plaintext)
+        } catch (e: Exception) {
+            SecureResult.Failure(CypherError.CryptoError("Decryption failed", e))
         }
-        if (envelope[0] != VERSION) {
-            return SecureResult.Failure(CypherError.CryptoError("Unknown envelope version ${envelope[0]}"))
-        }
-
-        val iv = envelope.copyOfRange(1, 1 + IV_SIZE)
-        val ct = envelope.copyOfRange(1 + IV_SIZE, envelope.size)
-
-        val plaintext = Cipher.getInstance(ALGORITHM).run {
-            init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(TAG_SIZE, iv))
-            if (aad.isNotEmpty()) updateAAD(aad)
-            doFinal(ct)
-        }
-
-        iv.fill(0)
-
-        SecureResult.Success(plaintext)
-    } catch (e: Exception) {
-        SecureResult.Failure(CypherError.CryptoError("Decryption failed", e))
     }
 }

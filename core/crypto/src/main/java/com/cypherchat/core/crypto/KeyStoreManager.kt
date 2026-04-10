@@ -39,14 +39,16 @@ object KeyStoreManager {
 
     // ── Private ──────────────────────────────────────────────────────────────
 
-    private fun getOrCreate(alias: String): SecureResult<SecretKey> = try {
-        val ks = keyStore()
-        if (!ks.containsAlias(alias)) generateKey(alias)
-        val key = ks.getKey(alias, null) as? SecretKey
-            ?: return SecureResult.Failure(CypherError.CryptoError("Key not found: $alias"))
-        SecureResult.Success(key)
-    } catch (e: Exception) {
-        SecureResult.Failure(CypherError.CryptoError("KeyStore error for $alias", e))
+    private fun getOrCreate(alias: String): SecureResult<SecretKey> {
+        return try {
+            val ks = keyStore()
+            if (!ks.containsAlias(alias)) generateKey(alias)
+            val key = ks.getKey(alias, null) as? SecretKey
+                ?: return SecureResult.Failure(CypherError.CryptoError("Key not found: $alias"))
+            SecureResult.Success(key)
+        } catch (e: Exception) {
+            SecureResult.Failure(CypherError.CryptoError("KeyStore error for $alias", e))
+        }
     }
 
     private fun generateKey(alias: String) {

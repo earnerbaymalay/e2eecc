@@ -1,5 +1,6 @@
 package com.cypherchat.core.crypto
 
+import com.cypherchat.core.common.CypherError
 import com.cypherchat.core.common.SecureResult
 import java.security.KeyPair
 import java.security.KeyPairGenerator
@@ -57,7 +58,7 @@ data class DoubleRatchetState(
             )
             SecureResult.Success(state to dhPair.public.encoded)
         } catch (e: Exception) {
-            SecureResult.Failure(CryptoError("initAlice failed", e))
+            SecureResult.Failure(CypherError.CryptoError("initAlice failed", e))
         }
 
         /** Initialise Bob's (responder) side of the session. */
@@ -78,7 +79,7 @@ data class DoubleRatchetState(
             )
             SecureResult.Success(state)
         } catch (e: Exception) {
-            SecureResult.Failure(CryptoError("initBob failed", e))
+            SecureResult.Failure(CypherError.CryptoError("initBob failed", e))
         }
 
         /** Create initial state from X3DH handshake result. */
@@ -150,7 +151,7 @@ data class DoubleRatchetState(
      */
     fun encryptMessage(plaintext: ByteArray): SecureResult<Pair<DoubleRatchetState, ByteArray>> {
         val chain = sendChainKey
-            ?: return SecureResult.Failure(CryptoError("No send chain — session not established"))
+            ?: return SecureResult.Failure(CypherError.CryptoError("No send chain — session not established"))
 
         return try {
             val (newChainKey, msgKey) = kdfChainKey(chain)
@@ -167,7 +168,7 @@ data class DoubleRatchetState(
             msgKey.fill(0)
             SecureResult.Success(newState to ciphertext)
         } catch (e: Exception) {
-            SecureResult.Failure(CryptoError("encrypt failed", e))
+            SecureResult.Failure(CypherError.CryptoError("encrypt failed", e))
         }
     }
 
@@ -202,7 +203,7 @@ data class DoubleRatchetState(
                 val cachedKey = state.skippedMessageKeys[skipKey]
                 if (cachedKey == null) {
                     return SecureResult.Failure(
-                        CryptoError("No key for skipped message #$msgNum")
+                        CypherError.CryptoError("No key for skipped message #$msgNum")
                     )
                 }
                 val plaintext = AesGcmCipher.decrypt(ciphertext, cachedKey).getOrThrow()
@@ -220,7 +221,7 @@ data class DoubleRatchetState(
 
             while (currentRecvNum < msgNum && currentRecvChain != null) {
                 if (newSkipped.size >= MAX_SKIP) {
-                    return SecureResult.Failure(CryptoError("Skipped message cache full"))
+                    return SecureResult.Failure(CypherError.CryptoError("Skipped message cache full"))
                 }
                 val (nextChain, msgKey) = kdfChainKey(currentRecvChain)
                 newSkipped[senderRatchetKey.encoded.toHexKey() to currentRecvNum] = msgKey
@@ -230,7 +231,7 @@ data class DoubleRatchetState(
 
             // Derive the message key for this message number
             if (currentRecvChain == null) {
-                return SecureResult.Failure(CryptoError("No receive chain"))
+                return SecureResult.Failure(CypherError.CryptoError("No receive chain"))
             }
 
             val (newRecvChain, msgKey) = kdfChainKey(currentRecvChain)
@@ -248,7 +249,7 @@ data class DoubleRatchetState(
 
             SecureResult.Success(newState to plaintext)
         } catch (e: Exception) {
-            SecureResult.Failure(CryptoError("decrypt failed", e))
+            SecureResult.Failure(CypherError.CryptoError("decrypt failed", e))
         }
     }
 
@@ -292,4 +293,3 @@ data class DoubleRatchetState(
     override fun hashCode(): Int = rootKey.contentHashCode() * 31 + sendMsgNum
 }
 
-class CryptoError(message: String, cause: Throwable? = null) : Exception(message, cause)
