@@ -118,8 +118,9 @@ class ConversationViewModel(
                 }.generateKeyPair()
 
                 // Initialize as responder (Bob) with shared secret from Keystore
-                val sharedSecret = KeyStoreManager.getMessageKey()
+                val sharedSecretKey = KeyStoreManager.getMessageKey()
                     .getOrNull() ?: return@launch
+                val sharedSecret = sharedSecretKey.encoded
 
                 val result = DoubleRatchetState.initBob(
                     sharedSecret = sharedSecret,
@@ -224,7 +225,7 @@ class ConversationViewModel(
                 ratchetState!!.decryptMessage(
                     ciphertext = envelope.envelope,
                     // TODO: Extract sender's ratchet key from envelope
-                    senderRatchetPublicKey = ratchetState!!.dhSendKeyPair.public,
+                    senderRatchetKey = ratchetState!!.dhSendKeyPair.public,
                     msgNum = 0
                 ).map { (newState, text) ->
                     ratchetState = newState

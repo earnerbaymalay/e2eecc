@@ -36,7 +36,10 @@ android {
 
     kotlinOptions { jvmTarget = "17" }
 
-    buildFeatures { compose = true }
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
 
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
@@ -71,6 +74,10 @@ dependencies {
     implementation(project(":core:crypto"))
     implementation(project(":core:database"))
     implementation(project(":core:network"))
+
+    // Room (needed to access RoomDatabase supertype)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit.ext)
