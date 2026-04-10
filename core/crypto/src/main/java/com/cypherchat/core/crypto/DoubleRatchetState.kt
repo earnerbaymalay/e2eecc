@@ -186,9 +186,10 @@ data class DoubleRatchetState(
             // Check if we need a DH ratchet step (new sender ratchet key)
             var state = this
             var needsRatchet = false
+            val recvKey = state.dhRecvPublicKey
 
-            if (state.dhRecvPublicKey == null ||
-                !state.dhRecvPublicKey.encoded.contentEquals(senderRatchetKey.encoded)) {
+            if (recvKey == null ||
+                !recvKey.encoded.contentEquals(senderRatchetKey.encoded)) {
                 needsRatchet = true
             }
 

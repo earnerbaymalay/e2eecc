@@ -36,6 +36,12 @@ sealed class SecureResult<out T> {
         if (this is Failure) block(error)
         return this
     }
+
+    /** Return the value or throw the wrapped error. */
+    fun getOrThrow(): T = when (this) {
+        is Success -> value
+        is Failure -> throw IllegalStateException(error.toString())
+    }
 }
 
 sealed class CypherError {

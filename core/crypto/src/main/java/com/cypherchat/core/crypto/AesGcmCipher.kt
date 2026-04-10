@@ -6,6 +6,7 @@ import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
+import javax.crypto.spec.SecretKeySpec
 
 private const val ALGORITHM   = "AES/GCM/NoPadding"
 private const val IV_SIZE     = 12     // 96 bits — NIST recommended for GCM
@@ -92,4 +93,22 @@ object AesGcmCipher {
             SecureResult.Failure(CypherError.CryptoError("Decryption failed", e))
         }
     }
+
+    /**
+     * Encrypt using a raw [ByteArray] key (used by Double Ratchet message keys).
+     */
+    fun encrypt(
+        plaintext: ByteArray,
+        keyBytes: ByteArray,
+        aad: ByteArray = ByteArray(0)
+    ): SecureResult<ByteArray> = encrypt(plaintext, SecretKeySpec(keyBytes, "AES"), aad)
+
+    /**
+     * Decrypt using a raw [ByteArray] key (used by Double Ratchet message keys).
+     */
+    fun decrypt(
+        envelope: ByteArray,
+        keyBytes: ByteArray,
+        aad: ByteArray = ByteArray(0)
+    ): SecureResult<ByteArray> = decrypt(envelope, SecretKeySpec(keyBytes, "AES"), aad)
 }
