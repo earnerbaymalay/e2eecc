@@ -4,7 +4,7 @@
 param(
     [string]$GitLabUrl = "",
     [string]$Username = "",
-    [string]$ProjectName = "e2eecc",
+    [string]$ProjectName = "cyph3rchat",
     [switch]$UseSSH = $false
 )
 

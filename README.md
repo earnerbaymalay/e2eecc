@@ -7,7 +7,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Android_24%2B-4c566a?style=for-the-badge&logo=android)]()
 [![License](https://img.shields.io/badge/license-MIT-f1fa8c?style=for-the-badge)](LICENSE)
 
-**[📲 Download APK](https://github.com/earnerbaymalay/e2eecc/releases/latest/download/cypherchat.apk)**
+**[📲 Download APK](https://github.com/earnerbaymalay/cyph3rchat/releases/latest/download/cypherchat.apk)**
 
 </div>
 
@@ -39,8 +39,8 @@ Plaintext messages are never written to disk; only ciphertext is stored. Chain k
 Requires Android Studio Arctic Fox or later, JDK 17, and Android SDK 24-34.
 
 ```bash
-git clone https://github.com/earnerbaymalay/e2eecc.git
-cd e2eecc
+git clone https://github.com/earnerbaymalay/cyph3rchat.git
+cd cyph3rchat
 ```
 
 Open the project in Android Studio, sync Gradle, and run it on a device or emulator (Minimum SDK 24, Target SDK 34).
@@ -52,7 +52,7 @@ The application starts with an onboarding sequence, followed by the chat list, a
 ## Architecture
 
 ```
-e2eecc/
+cyph3rchat/
 ├── app/                          # Jetpack Compose UI, Koin DI
 │   ├── CypherchatApplication
 │   ├── MainActivity              # NavHost, PIN lock, JSON export

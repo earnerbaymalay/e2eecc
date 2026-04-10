@@ -1,4 +1,4 @@
-name: E2EECC CI/CD
+name: CYPH3RCHAT CI/CD
 
 on:
   push:
@@ -35,14 +35,14 @@ jobs:
         run: |
           ./gradlew app:assembleDebug --no-daemon --stacktrace
           mkdir -p build-artifacts
-          cp app/build/outputs/apk/debug/*.apk build-artifacts/cypherchat.apk
+          find app/build/outputs/apk/debug -name "*.apk" -exec cp {} build-artifacts/cypherchat.apk \; -quit
 
       - name: Build release APK (unsigned)
         run: |
           ./gradlew app:assembleRelease --no-daemon --stacktrace
           # If we had a signing key, we would sign it here.
           # For now, we'll just use the debug APK as the primary one since it's signed with the debug key.
-          # cp app/build/outputs/apk/release/*.apk build-artifacts/cypherchat-release-unsigned.apk
+          # find app/build/outputs/apk/release -name "*.apk" -exec cp {} build-artifacts/cypherchat-release-unsigned.apk \; -quit
         continue-on-error: true
 
       - name: Upload APK

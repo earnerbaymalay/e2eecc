@@ -11,7 +11,7 @@
 
 ### Installation
 
-1.  **Obtain the APK:** Download from [GitHub Releases](https://github.com/earnerbaymalay/e2eecc/releases) or build from source.
+1.  **Obtain the APK:** Download from [GitHub Releases](https://github.com/earnerbaymalay/cyph3rchat/releases) or build from source.
 2.  **Install:** Enable "Install unknown apps" in Android settings, then install the APK.
 3.  **Launch:** Open Cypherchat from your app drawer.
 
@@ -51,12 +51,12 @@ This feature is planned for future implementation. When available:
 ### Building from source
 
 ```bash
-git clone https://github.com/earnerbaymalay/e2eecc.git
-cd e2eecc
+git clone https://github.com/earnerbaymalay/cyph3rchat.git
+cd cyph3rchat
 ```
 
 Open the project in Android Studio:
-1.  **File → Open** and select the `e2eecc` directory.
+1.  **File → Open** and select the `cyph3rchat` directory.
 2.  **Sync Gradle** (typically automatic upon opening).
 3.  **Run** on a device or emulator (Minimum SDK 24).
 

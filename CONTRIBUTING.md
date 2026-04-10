@@ -5,7 +5,7 @@ Thank you for considering a contribution. **Security software is only as good as
 ## 🧭 Getting Started
 
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/e2eecc.git`
+2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/cyph3rchat.git`
 3. Open in Android Studio (Arctic Fox+)
 4. Sync Gradle and ensure the project builds
 5. Create a branch: `git checkout -b feature/your-feature-name`
