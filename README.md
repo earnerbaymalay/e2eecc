@@ -1,14 +1,15 @@
-# Cypherchat (e2eecc)
+<div align="center">
 
-End-to-end encrypted messaging. No phone number, no username, and no account required.
+# ⬡ C Y P H E R C H A T
+### *End-to-End Encrypted Messaging for Android.*
 
 [![Status](https://img.shields.io/badge/Status-Alpha-50fa7b?style=for-the-badge)]()
 [![Platform](https://img.shields.io/badge/Platform-Android_24%2B-4c566a?style=for-the-badge&logo=android)]()
-[![Kotlin](https://img.shields.io/badge/Kotlin-100%25-7F52FF?style=for-the-badge&logo=kotlin)]()
-[![Encryption](https://img.shields.io/badge/Encryption-AES--256--GCM+%2B+Double_Ratchet-bd93f9?style=for-the-badge)](docs/SECURITY.md)
 [![License](https://img.shields.io/badge/license-MIT-f1fa8c?style=for-the-badge)](LICENSE)
 
-[Quick start](#build-and-run) · [Usage guide](docs/USAGE.md) · [Architecture](docs/ARCHITECTURE.md) · [Security](docs/SECURITY.md) · [Roadmap](docs/ROADMAP.md)
+**[📲 Download APK](https://github.com/earnerbaymalay/e2eecc/releases/latest/download/cypherchat.apk)**
+
+</div>
 
 ---
 

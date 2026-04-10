@@ -1,6 +1,9 @@
-# Cypherchat troubleshooting guide
+<div align="center">
 
-Common issues and solutions.
+# ⬡ C Y P H E R C H A T
+### *Troubleshooting & Support.*
+
+</div>
 
 ---
 

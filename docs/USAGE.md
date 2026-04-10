@@ -1,6 +1,9 @@
-# Cypherchat usage guide
+<div align="center">
 
-Instructions for users and developers.
+# ⬡ C Y P H E R C H A T
+### *Usage Guide & Instructions.*
+
+</div>
 
 ---
 
