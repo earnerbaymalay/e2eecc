@@ -13,7 +13,7 @@ android {
         minSdk = libs.versions.build.min.sdk.get().toInt()
         targetSdk = libs.versions.build.target.sdk.get().toInt()
         versionCode = 1
-        versionName = "1.0.0-alpha"
+        versionName = "1.0.0-beta"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
