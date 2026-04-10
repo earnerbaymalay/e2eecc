@@ -17,7 +17,6 @@ data class ChatListUiState(
     val contacts: List<ContactUi> = emptyList(),
     val lastMessages: Map<String, String> = emptyMap(),
     val isLoading: Boolean = true,
-    val isCreatingInvite: Boolean = false,
     val error: String? = null
 )
 
@@ -61,66 +60,50 @@ class ChatListViewModel(
                         )
                     }
                     val previews = lastMsgs.associate { it.conversationId to it.previewText }
-
-                    ChatListUiState(
-                        contacts = contactUis,
-                        lastMessages = previews,
-                        isLoading = false
-                    )
+                    ChatListUiState(contacts = contactUis, lastMessages = previews, isLoading = false)
                 }.catch { e ->
                     Logger.e(TAG, "Error observing contacts", e)
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = "Failed to load conversations"
-                        )
-                    }
+                    _uiState.update { it.copy(isLoading = false, error = "Failed to load conversations") }
                 }.collect { state ->
                     _uiState.value = state
                 }
             } catch (e: Exception) {
                 Logger.e(TAG, "Fatal error in observeContacts", e)
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        error = "Failed to load conversations: ${e.message}"
-                    )
-                }
+                _uiState.update { it.copy(isLoading = false, error = "Failed to load conversations") }
             }
         }
     }
 
-    /** Create a new contact with an invitation link. */
-    fun createNewConversation() {
-        createNewConversation("New Contact")
-    }
-
-    fun createNewConversation(displayName: String) {
+    fun createContact(displayName: String) {
         viewModelScope.launch(dispatchers.io) {
-            _uiState.update { it.copy(isCreatingInvite = true, error = null) }
             try {
-                // Create a stub contact for alpha (full SimpleX integration planned)
                 val conversationId = UUID.randomUUID().toString()
                 val contact = ContactEntity(
                     id = UUID.randomUUID().toString(),
                     displayName = displayName,
-                    publicKeyFingerprint = "pending_key_exchange",
+                    publicKeyFingerprint = "pending",
                     publicKeyBytes = ByteArray(0),
                     conversationId = conversationId,
                     createdAt = System.currentTimeMillis(),
                     verified = false
                 )
                 contactDao.insert(contact)
-                _uiState.update { it.copy(isCreatingInvite = false) }
                 Logger.d(TAG, "Created contact: $displayName")
             } catch (e: Exception) {
                 Logger.e(TAG, "Failed to create contact", e)
-                _uiState.update {
-                    it.copy(
-                        isCreatingInvite = false,
-                        error = "Failed to create contact: ${e.message}"
-                    )
-                }
+                _uiState.update { it.copy(error = "Failed to create contact") }
+            }
+        }
+    }
+
+    fun deleteContact(conversationId: String) {
+        viewModelScope.launch(dispatchers.io) {
+            try {
+                val contact = contactDao.getByConversationId(conversationId)
+                contact?.let { contactDao.deleteById(it.id) }
+                messageDao.deleteConversation(conversationId)
+            } catch (e: Exception) {
+                Logger.e(TAG, "Failed to delete contact", e)
             }
         }
     }
@@ -128,15 +111,5 @@ class ChatListViewModel(
     fun retry() {
         _uiState.update { it.copy(error = null, isLoading = true) }
         observeContacts()
-    }
-
-    fun markConversationRead(conversationId: String) {
-        viewModelScope.launch(dispatchers.io) {
-            try {
-                messageDao.markConversationRead(conversationId)
-            } catch (e: Exception) {
-                Logger.e(TAG, "Failed to mark conversation read", e)
-            }
-        }
     }
 }
