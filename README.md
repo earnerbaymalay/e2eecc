@@ -7,7 +7,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Android_24%2B-4c566a?style=for-the-badge&logo=android)]()
 [![License](https://img.shields.io/badge/license-MIT-f1fa8c?style=for-the-badge)](LICENSE)
 
-**[📲 Download APK](https://github.com/earnerbaymalay/e2eecc/releases)** · **[🌐 Sideload Hub](https://earnerbaymalay.github.io/sideload/)** · **[📖 Usage Guide](docs/USAGE.md)** · **[🔧 Troubleshooting](TROUBLESHOOTING.md)**
+**[📲 Download APK](https://github.com/earnerbaymalay/cyph3rchat/releases)** · **[🌐 Sideload Hub](https://earnerbaymalay.github.io/sideload/)** · **[📖 Usage Guide](docs/USAGE.md)** · **[🔧 Troubleshooting](TROUBLESHOOTING.md)**
 
 </div>
 
@@ -25,7 +25,7 @@
 
 ### Install on Android
 
-1. Download the latest APK from [GitHub Releases](https://github.com/earnerbaymalay/e2eecc/releases)
+1. Download the latest APK from [GitHub Releases](https://github.com/earnerbaymalay/cyph3rchat/releases)
 2. Enable "Install unknown apps" in Android settings
 3. Install and open — no account, no phone number, no server
 
@@ -36,7 +36,7 @@
 ### Build from Source
 
 ```bash
-git clone https://github.com/earnerbaymalay/e2eecc.git
+git clone https://github.com/earnerbaymalay/cyph3rchat.git
 cd cyph3rchat
 ```
 
@@ -119,7 +119,7 @@ Conversation                     Settings
 ### Android
 
 ```bash
-git clone https://github.com/earnerbaymalay/e2eecc.git
+git clone https://github.com/earnerbaymalay/cyph3rchat.git
 cd cyph3rchat
 ```
 
