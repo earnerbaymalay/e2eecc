@@ -1,7 +1,9 @@
 <div align="center">
 
-# ⬡ C Y P H E R C H A T
+# 🛡️ C Y P H E R C H A T
 ### *Usage Guide & Instructions.*
+
+**[🔧 Troubleshooting](../TROUBLESHOOTING.md)** · **[📲 Sideload Hub](https://earnerbaymalay.github.io/sideload/)** · **[↩ Back to README](../README.md)**
 
 </div>
 

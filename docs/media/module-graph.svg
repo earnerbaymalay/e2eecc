@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="340" viewBox="0 0 720 340">
+  <style>
+    .bg { fill: #0d1117; }
+    .card { fill: #161b22; rx: 6; }
+    .card-border { stroke: #30363d; stroke-width: 1; fill: none; rx: 6; }
+    .title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; font-weight: 600; }
+    .text { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; }
+    .small { font-size: 10px; }
+    .white { fill: #e6edf3; }
+    .dim { fill: #8b949e; }
+    .blue { fill: #58a6ff; }
+    .green { fill: #3fb950; }
+    .orange { fill: #f0883e; }
+    .purple { fill: #bc8cff; }
+    .teal { fill: #39d353; }
+  </style>
+
+  <rect width="720" height="340" class="bg"/>
+  <text x="36" y="32" class="title white">Cyph3rChat Module Dependency Graph</text>
+  <text x="36" y="50" class="text dim">Multi-module Clean Architecture · Each module independently testable</text>
+
+  <!-- App module (top center) -->
+  <rect x="240" y="80" width="240" height="56" class="card" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="360" y="102" class="title blue" text-anchor="middle">📱 app</text>
+  <text x="360" y="122" class="text dim" text-anchor="middle">Compose UI · Koin DI · Navigation</text>
+
+  <!-- Arrows from app down -->
+  <line x1="310" y1="136" x2="140" y2="172" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="340" y1="136" x2="310" y2="172" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="380" y1="136" x2="440" y2="172" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="410" y1="136" x2="580" y2="172" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- core:common (left) -->
+  <rect x="36" y="172" width="210" height="56" class="card" stroke="#3fb950" stroke-width="1"/>
+  <text x="141" y="194" class="title green" text-anchor="middle">core:common</text>
+  <text x="141" y="214" class="text dim" text-anchor="middle">SecureResult · Logger · Dispatchers</text>
+
+  <!-- core:crypto (center-left) -->
+  <rect x="266" y="172" width="188" height="56" class="card" stroke="#f0883e" stroke-width="1"/>
+  <text x="360" y="194" class="title orange" text-anchor="middle">core:crypto</text>
+  <text x="360" y="214" class="text dim" text-anchor="middle">Keystore · AES · HKDF · Ratchet</text>
+
+  <!-- core:database (center-right) -->
+  <rect x="36" y="256" width="210" height="56" class="card" stroke="#bc8cff" stroke-width="1"/>
+  <text x="141" y="278" class="title purple" text-anchor="middle">core:database</text>
+  <text x="141" y="298" class="text dim" text-anchor="middle">Room + SQLCipher · DAOs</text>
+
+  <!-- core:network (right) -->
+  <rect x="474" y="172" width="210" height="56" class="card" stroke="#58a6ff" stroke-width="1"/>
+  <text x="579" y="194" class="title blue" text-anchor="middle">core:network</text>
+  <text x="579" y="214" class="text dim" text-anchor="middle">SimpleX Transport · Envelope</text>
+
+  <!-- crypto depends on common -->
+  <line x1="266" y1="200" x2="246" y2="200" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- database depends on crypto and common -->
+  <line x1="360" y1="228" x2="230" y2="270" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#arrow)"/>
+  <line x1="141" y1="228" x2="141" y2="256" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#arrow)"/>
+
+  <!-- network depends on common -->
+  <line x1="474" y1="200" x2="246" y2="200" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#arrow)"/>
+
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#30363d"/>
+    </marker>
+  </defs>
+
+  <text x="36" y="335" class="text small dim">── solid = direct dependency  ┈ dashed = transitive  |  crypto module has zero Android UI deps → auditable independently</text>
+</svg>

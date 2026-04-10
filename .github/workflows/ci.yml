@@ -1,4 +1,4 @@
-name: CYPH3RCHAT CI/CD
+name: Cyph3rChat CI/CD
 
 on:
   push:
@@ -30,6 +30,13 @@ jobs:
           java-version: '17'
           cache: gradle
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK components
+        run: |
+          sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+
       - name: Grant execute permission
         run: chmod +x gradlew
 
@@ -38,14 +45,6 @@ jobs:
           ./gradlew app:assembleDebug --no-daemon --stacktrace
           mkdir -p build-artifacts
           find app/build/outputs/apk/debug -name "*.apk" -exec cp {} build-artifacts/cypherchat.apk \; -quit
-
-      - name: Build release APK (unsigned)
-        run: |
-          ./gradlew app:assembleRelease --no-daemon --stacktrace
-          # If we had a signing key, we would sign it here.
-          # For now, we'll just use the debug APK as the primary one since it's signed with the debug key.
-          # find app/build/outputs/apk/release -name "*.apk" -exec cp {} build-artifacts/cypherchat-release-unsigned.apk \; -quit
-        continue-on-error: true
 
       - name: Upload APK
         if: always()
@@ -81,9 +80,10 @@ jobs:
       contents: write
 
     steps:
-      - name: Download all artifacts
+      - name: Download APK
         uses: actions/download-artifact@v4
         with:
+          name: cypherchat-android-apk
           path: artifacts
 
       - name: List artifacts
@@ -92,12 +92,12 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          name: ${{ github.ref_name }} (Build ${{ github.run_number }})
-          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('latest-build-{0}', github.run_number) }}
-          files: |
-            artifacts/**/*.apk
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('v{0}', github.run_number) }}
+          name: ${{ github.ref_type == 'tag' && github.ref_name || format('Build {0}', github.run_number) }}
+          files: artifacts/**/*.apk
           generate_release_notes: true
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') || github.event_name == 'workflow_dispatch' }}
+          fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

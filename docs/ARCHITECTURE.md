@@ -4,6 +4,8 @@
 
 Cypherchat is a **multi-module Android application** built with Kotlin and Jetpack Compose. The architecture follows **Clean Architecture principles** with clear separation between UI, domain, and infrastructure layers.
 
+![Module Overview](media/module-graph.svg)
+
 ```
 ┌─────────────────────────────────────────────────────┐
 │                        app                          │
@@ -40,6 +42,10 @@ Cypherchat is a **multi-module Android application** built with Kotlin and Jetpa
              │  Entities, DAOs)   │
              └────────────────────┘
 ```
+
+## Cryptography Stack
+
+![Crypto Stack](media/crypto-stack.svg)
 
 ## Module Descriptions
 
@@ -102,6 +108,10 @@ Cypherchat is a **multi-module Android application** built with Kotlin and Jetpa
 **Note:** The SimpleX SDK is not yet integrated. The interface is defined; a real implementation will either wrap the SimpleX Kotlin SDK or provide a local relay mock for development.
 
 ## Data Flow
+
+### Message Encryption (Double Ratchet)
+
+![Encryption Flow](media/encryption-flow.svg)
 
 ### Message Send (future, fully wired)
 ```

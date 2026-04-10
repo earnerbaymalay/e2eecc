@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="380" viewBox="0 0 720 380">
+  <style>
+    .bg { fill: #0d1117; }
+    .card { fill: #161b22; rx: 6; }
+    .card-border { stroke: #30363d; stroke-width: 1; fill: none; rx: 6; }
+    .title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; font-weight: 600; }
+    .text { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; }
+    .small { font-size: 10px; }
+    .white { fill: #e6edf3; }
+    .dim { fill: #8b949e; }
+    .green { fill: #3fb950; }
+    .red { fill: #f85149; }
+    .blue { fill: #58a6ff; }
+    .orange { fill: #f0883e; }
+    .purple { fill: #bc8cff; }
+  </style>
+
+  <rect width="720" height="380" class="bg"/>
+  <text x="36" y="32" class="title white">Message Encryption Flow (Double Ratchet)</text>
+  <text x="36" y="50" class="text dim">Plaintext → Ciphertext → Relay → Decrypt → Plaintext</text>
+
+  <!-- SENDER column -->
+  <rect x="36" y="76" width="300" height="280" class="card"/>
+  <rect x="36" y="76" width="300" height="280" class="card-border"/>
+  <text x="186" y="100" class="title green" text-anchor="middle">📤 Sender Device</text>
+
+  <!-- Step 1 -->
+  <rect x="60" y="116" width="252" height="36" class="card"/>
+  <text x="186" y="132" class="text white" text-anchor="middle" font-weight="600">"Hey, how are you?"</text>
+  <text x="186" y="148" class="small dim" text-anchor="middle">Step 1: Plaintext message</text>
+
+  <!-- Arrow -->
+  <line x1="186" y1="152" x2="186" y2="172" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 2 -->
+  <rect x="60" y="172" width="252" height="36" class="card" stroke="#f0883e" stroke-width="1"/>
+  <text x="186" y="188" class="text orange" text-anchor="middle" font-weight="600">DoubleRatchetState.encrypt()</text>
+  <text x="186" y="204" class="small dim" text-anchor="middle">Step 2: Derive message key via HKDF</text>
+
+  <!-- Arrow -->
+  <line x1="186" y1="208" x2="186" y2="228" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 3 -->
+  <rect x="60" y="228" width="252" height="36" class="card" stroke="#bc8cff" stroke-width="1"/>
+  <text x="186" y="244" class="text purple" text-anchor="middle" font-weight="600">AES-256-GCM(plaintext, key, IV)</text>
+  <text x="186" y="260" class="small dim" text-anchor="middle">Step 3: Authenticated encryption</text>
+
+  <!-- Arrow -->
+  <line x1="186" y1="264" x2="186" y2="284" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 4 -->
+  <rect x="60" y="284" width="252" height="36" class="card" stroke="#3fb950" stroke-width="1"/>
+  <text x="186" y="300" class="text green" text-anchor="middle" font-weight="600">[v1][IV:12B][ciphertext+tag]</text>
+  <text x="186" y="316" class="small dim" text-anchor="middle">Step 4: Envelope + save to SQLCipher DB</text>
+
+  <!-- Arrow -->
+  <line x1="186" y1="320" x2="186" y2="340" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 5 -->
+  <rect x="60" y="340" width="252" height="12" fill="none"/>
+  <text x="186" y="350" class="text dim" text-anchor="middle">→ send to SimpleX Relay →</text>
+
+  <!-- RECEIVER column -->
+  <rect x="384" y="76" width="300" height="280" class="card"/>
+  <rect x="384" y="76" width="300" height="280" class="card-border"/>
+  <text x="534" y="100" class="title blue" text-anchor="middle">📥 Receiver Device</text>
+
+  <!-- Step 6 -->
+  <rect x="408" y="116" width="252" height="36" class="card" stroke="#58a6ff" stroke-width="1"/>
+  <text x="534" y="132" class="text blue" text-anchor="middle" font-weight="600">[v1][IV:12B][ciphertext+tag]</text>
+  <text x="534" y="148" class="small dim" text-anchor="middle">Step 6: Receive envelope from relay</text>
+
+  <!-- Arrow -->
+  <line x1="534" y1="152" x2="534" y2="172" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 7 -->
+  <rect x="408" y="172" width="252" height="36" class="card" stroke="#f0883e" stroke-width="1"/>
+  <text x="534" y="188" class="text orange" text-anchor="middle" font-weight="600">DoubleRatchetState.decrypt()</text>
+  <text x="534" y="204" class="small dim" text-anchor="middle">Step 7: Derive same key via HKDF chain</text>
+
+  <!-- Arrow -->
+  <line x1="534" y1="208" x2="534" y2="228" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 8 -->
+  <rect x="408" y="228" width="252" height="36" class="card" stroke="#bc8cff" stroke-width="1"/>
+  <text x="534" y="244" class="text purple" text-anchor="middle" font-weight="600">AES-256-GCM.decrypt(ciphertext)</text>
+  <text x="534" y="260" class="small dim" text-anchor="middle">Step 8: Auth tag verified ✓</text>
+
+  <!-- Arrow -->
+  <line x1="534" y1="264" x2="534" y2="284" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 9 -->
+  <rect x="408" y="284" width="252" height="36" class="card" stroke="#3fb950" stroke-width="1"/>
+  <text x="534" y="300" class="text green" text-anchor="middle" font-weight="600">"Hey, how are you?"</text>
+  <text x="534" y="316" class="small dim" text-anchor="middle">Step 9: Display plaintext · Zero key from memory</text>
+
+  <!-- Arrow -->
+  <line x1="534" y1="320" x2="534" y2="340" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <rect x="408" y="340" width="252" height="12" fill="none"/>
+  <text x="534" y="350" class="text dim" text-anchor="middle">✓ Forward secrecy · Break-in recovery · No server access</text>
+
+  <!-- Relay arrow between columns -->
+  <path d="M 336 350 Q 360 350 384 350" stroke="#f85149" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#arrow-red)"/>
+  <text x="360" y="340" class="small red" text-anchor="middle">RELAY</text>
+
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#30363d"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#f85149"/>
+    </marker>
+  </defs>
+
+  <text x="36" y="375" class="text small dim">Each message uses a new key from the ratchet chain → past messages remain secure even if a key is compromised</text>
+</svg>

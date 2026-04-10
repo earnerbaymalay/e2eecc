@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="400" viewBox="0 0 720 400">
+  <style>
+    .bg { fill: #0d1117; }
+    .card { fill: #161b22; rx: 6; }
+    .card-border { stroke: #30363d; stroke-width: 1; fill: none; rx: 6; }
+    .title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; font-weight: 600; }
+    .text { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; }
+    .small { font-size: 10px; }
+    .white { fill: #e6edf3; }
+    .dim { fill: #8b949e; }
+    .green { fill: #3fb950; }
+    .blue { fill: #58a6ff; }
+    .orange { fill: #f0883e; }
+    .purple { fill: #bc8cff; }
+    .pink { fill: #f778ba; }
+    .teal { fill: #39d353; }
+  </style>
+
+  <rect width="720" height="400" class="bg"/>
+  <text x="36" y="32" class="title white">Cyph3rChat Cryptography Stack</text>
+  <text x="36" y="50" class="text dim">Defense in depth · Hardware-bound keys · Zero-knowledge transport</text>
+
+  <!-- Layer 1: User -->
+  <rect x="36" y="80" width="648" height="48" class="card"/>
+  <rect x="36" y="80" width="648" height="48" class="card-border"/>
+  <text x="360" y="102" class="title white" text-anchor="middle">👤 User</text>
+  <text x="360" y="122" class="text dim" text-anchor="middle">Compose UI → ConversationScreen → tap "Send"</text>
+
+  <!-- Arrow -->
+  <line x1="360" y1="128" x2="360" y2="148" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Layer 2: Crypto -->
+  <rect x="36" y="148" width="648" height="72" class="card"/>
+  <rect x="36" y="148" width="648" height="72" class="card-border"/>
+  <text x="360" y="170" class="title green" text-anchor="middle">🔐 Cryptographic Engine (core:crypto)</text>
+  <text x="150" y="196" class="text dim" text-anchor="middle">Double Ratchet → encrypt</text>
+  <text x="360" y="196" class="text dim" text-anchor="middle">AES-256-GCM envelope</text>
+  <text x="560" y="196" class="text dim" text-anchor="middle">HKDF-SHA256 key derivation</text>
+  <line x1="255" y1="184" x2="255" y2="208" stroke="#21262d" stroke-width="1"/>
+  <line x1="460" y1="184" x2="460" y2="208" stroke="#21262d" stroke-width="1"/>
+  <text x="360" y="214" class="small dim" text-anchor="middle">[VERSION 1B] [IV 12B] [CIPHERTEXT + AUTH TAG]</text>
+
+  <!-- Arrow -->
+  <line x1="360" y1="220" x2="360" y2="240" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Layer 3: Storage -->
+  <rect x="36" y="240" width="320" height="72" class="card"/>
+  <rect x="36" y="240" width="320" height="72" class="card-border"/>
+  <text x="196" y="262" class="title purple" text-anchor="middle">🗄️ Encrypted Storage (core:database)</text>
+  <text x="196" y="284" class="text dim" text-anchor="middle">SQLCipher AES-256-CBC</text>
+  <text x="196" y="304" class="text dim" text-anchor="middle">Room + DAOs · Keystore-bound passphrase</text>
+
+  <!-- Layer 3: Transport -->
+  <rect x="372" y="240" width="312" height="72" class="card"/>
+  <rect x="372" y="240" width="312" height="72" class="card-border"/>
+  <text x="528" y="262" class="title blue" text-anchor="middle">📡 Transport (core:network)</text>
+  <text x="528" y="284" class="text dim" text-anchor="middle">SimpleX Relay (planned)</text>
+  <text x="528" y="304" class="text dim" text-anchor="middle">No user IDs · Ephemeral queues</text>
+
+  <!-- Side: Keystore -->
+  <rect x="36" y="336" width="648" height="48" class="card"/>
+  <rect x="36" y="336" width="648" height="48" class="card-border"/>
+  <text x="360" y="358" class="title orange" text-anchor="middle">🔑 Android Keystore (Hardware-Backed TEE)</text>
+  <text x="360" y="378" class="small dim" text-anchor="middle">AES-256-GCM key generation · Non-exportable · Device-bound · Zeroed from memory after use</text>
+
+  <!-- Arrows from crypto and transport down to keystore -->
+  <line x1="196" y1="312" x2="196" y2="336" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#arrow)"/>
+  <line x1="528" y1="312" x2="528" y2="336" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#arrow)"/>
+
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#30363d"/>
+    </marker>
+  </defs>
+
+  <text x="36" y="395" class="text small dim">Solid arrows → direct calls  ┈ dashed → key dependency  |  Plaintext never written to disk</text>
+</svg>
