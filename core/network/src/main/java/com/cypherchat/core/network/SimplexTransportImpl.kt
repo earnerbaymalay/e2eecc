@@ -1,5 +1,6 @@
 package com.cypherchat.core.network
 
+import com.cypherchat.core.common.CypherError
 import com.cypherchat.core.common.SecureResult
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
@@ -44,7 +45,7 @@ class SimplexTransportImpl : SimplexTransport {
             SecureResult.Success(Unit)
         } catch (e: Exception) {
             _state.value = TransportState.ERROR
-            SecureResult.Failure(NetworkException("Connection failed: ${e.message}"))
+            SecureResult.Failure(CypherError.NetworkError("Connection failed: ${e.message}"))
         }
     }
 
@@ -67,7 +68,7 @@ class SimplexTransportImpl : SimplexTransport {
 
             SecureResult.Success(invitation)
         } catch (e: Exception) {
-            SecureResult.Failure(NetworkException("Invitation creation failed: ${e.message}"))
+            SecureResult.Failure(CypherError.NetworkError("Invitation creation failed: ${e.message}"))
         }
     }
 
@@ -85,14 +86,14 @@ class SimplexTransportImpl : SimplexTransport {
 
             SecureResult.Success(connection)
         } catch (e: Exception) {
-            SecureResult.Failure(NetworkException("Invitation acceptance failed: ${e.message}"))
+            SecureResult.Failure(CypherError.NetworkError("Invitation acceptance failed: ${e.message}"))
         }
     }
 
     override suspend fun sendMessage(connection: SimplexConnection, envelope: ByteArray): SecureResult<Unit> {
         return try {
             val conn = connections[connection.connectionId]
-                ?: return SecureResult.Failure(NetworkException("Unknown connection: ${connection.connectionId}"))
+                ?: return SecureResult.Failure(CypherError.NetworkError("Unknown connection: ${connection.connectionId}"))
 
             // In production: Send via SimpleX SDK
             // For now: Store locally and simulate delivery
@@ -107,7 +108,7 @@ class SimplexTransportImpl : SimplexTransport {
 
             SecureResult.Success(Unit)
         } catch (e: Exception) {
-            SecureResult.Failure(NetworkException("Send failed: ${e.message}"))
+            SecureResult.Failure(CypherError.NetworkError("Send failed: ${e.message}"))
         }
     }
 
@@ -135,8 +136,6 @@ class SimplexTransportImpl : SimplexTransport {
         )
     }
 }
-
-class NetworkException(message: String) : Exception(message)
 
 object crypto {
     fun generatePublicKey(): ByteArray {
