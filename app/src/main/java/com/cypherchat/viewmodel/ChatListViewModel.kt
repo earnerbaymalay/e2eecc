@@ -4,13 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cypherchat.core.common.DispatcherProvider
 import com.cypherchat.core.common.Logger
-import com.cypherchat.core.common.SecureResult
 import com.cypherchat.core.database.dao.ContactDao
 import com.cypherchat.core.database.dao.MessageDao
 import com.cypherchat.core.database.entity.ContactEntity
-import com.cypherchat.core.network.SimplexInvitation
-import com.cypherchat.core.network.SimplexTransport
-import com.cypherchat.core.network.SimplexTransportImpl
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -20,10 +16,8 @@ private const val TAG = "ChatListViewModel"
 data class ChatListUiState(
     val contacts: List<ContactUi> = emptyList(),
     val lastMessages: Map<String, String> = emptyMap(),
-    val unreadCounts: Map<String, Int> = emptyMap(),
     val isLoading: Boolean = true,
     val isCreatingInvite: Boolean = false,
-    val currentInvitation: SimplexInvitation? = null,
     val error: String? = null
 )
 
@@ -34,14 +28,12 @@ data class ContactUi(
     val verified: Boolean,
     val lastSeen: Long,
     val initial: String
-) {
-}
+)
 
 class ChatListViewModel(
     private val contactDao: ContactDao,
     private val messageDao: MessageDao,
-    private val dispatchers: DispatcherProvider,
-    private val transport: SimplexTransport = SimplexTransportImpl()
+    private val dispatchers: DispatcherProvider
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatListUiState())
@@ -53,42 +45,52 @@ class ChatListViewModel(
 
     private fun observeContacts() {
         viewModelScope.launch(dispatchers.io) {
-            combine(
-                contactDao.observeAll(),
-                messageDao.observeAllLastMessages(),
-                messageDao.observeAllUnreadCounts()
-            ) { contacts, lastMsgs, unreadList ->
-                val contactUis = contacts.map { c ->
-                    ContactUi(
-                        id = c.id,
-                        displayName = c.displayName,
-                        conversationId = c.conversationId,
-                        verified = c.verified,
-                        lastSeen = c.lastSeen,
-                        initial = c.displayName.take(1).uppercase()
+            try {
+                combine(
+                    contactDao.observeAll(),
+                    messageDao.observeAllLastMessages()
+                ) { contacts, lastMsgs ->
+                    val contactUis = contacts.map { c ->
+                        ContactUi(
+                            id = c.id,
+                            displayName = c.displayName,
+                            conversationId = c.conversationId,
+                            verified = c.verified,
+                            lastSeen = c.lastSeen,
+                            initial = c.displayName.take(1).uppercase()
+                        )
+                    }
+                    val previews = lastMsgs.associate { it.conversationId to it.previewText }
+
+                    ChatListUiState(
+                        contacts = contactUis,
+                        lastMessages = previews,
+                        isLoading = false
+                    )
+                }.catch { e ->
+                    Logger.e(TAG, "Error observing contacts", e)
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = "Failed to load conversations"
+                        )
+                    }
+                }.collect { state ->
+                    _uiState.value = state
+                }
+            } catch (e: Exception) {
+                Logger.e(TAG, "Fatal error in observeContacts", e)
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Failed to load conversations: ${e.message}"
                     )
                 }
-
-                val previews = lastMsgs.associate { it.conversationId to it.previewText }
-                val unreadCounts = unreadList.associate { it.conversationId to it.count.toInt() }
-
-                ChatListUiState(
-                    contacts = contactUis,
-                    lastMessages = previews,
-                    unreadCounts = unreadCounts,
-                    isLoading = false,
-                    currentInvitation = _uiState.value.currentInvitation,
-                    isCreatingInvite = _uiState.value.isCreatingInvite
-                )
-            }.catch { e ->
-                _uiState.update { it.copy(isLoading = false, error = "Failed to load contacts: ${e.message}") }
-            }.collect { state ->
-                _uiState.value = state
             }
         }
     }
 
-    /** Create a new contact with SimpleX invitation. */
+    /** Create a new contact with an invitation link. */
     fun createNewConversation() {
         createNewConversation("New Contact")
     }
@@ -96,63 +98,31 @@ class ChatListViewModel(
     fun createNewConversation(displayName: String) {
         viewModelScope.launch(dispatchers.io) {
             _uiState.update { it.copy(isCreatingInvite = true, error = null) }
-
-            val invitationResult = transport.createInvitation()
-
-            when (invitationResult) {
-                is SecureResult.Success -> {
-                    val invitation = invitationResult.value
-                    val conversationId = UUID.randomUUID().toString()
-
-                    val contact = ContactEntity(
-                        id = UUID.randomUUID().toString(),
-                        displayName = displayName,
-                        publicKeyFingerprint = invitation.publicKey.take(8).joinToString("") { "%02x".format(it) },
-                        publicKeyBytes = invitation.publicKey,
-                        conversationId = conversationId,
-                        createdAt = System.currentTimeMillis(),
-                        verified = false
+            try {
+                // Create a stub contact for alpha (full SimpleX integration planned)
+                val conversationId = UUID.randomUUID().toString()
+                val contact = ContactEntity(
+                    id = UUID.randomUUID().toString(),
+                    displayName = displayName,
+                    publicKeyFingerprint = "pending_key_exchange",
+                    publicKeyBytes = ByteArray(0),
+                    conversationId = conversationId,
+                    createdAt = System.currentTimeMillis(),
+                    verified = false
+                )
+                contactDao.insert(contact)
+                _uiState.update { it.copy(isCreatingInvite = false) }
+                Logger.d(TAG, "Created contact: $displayName")
+            } catch (e: Exception) {
+                Logger.e(TAG, "Failed to create contact", e)
+                _uiState.update {
+                    it.copy(
+                        isCreatingInvite = false,
+                        error = "Failed to create contact: ${e.message}"
                     )
-                    contactDao.insert(contact)
-
-                    _uiState.update {
-                        it.copy(
-                            isCreatingInvite = false,
-                            currentInvitation = invitation
-                        )
-                    }
-
-                    Logger.d(TAG, "Created invitation for $displayName: $conversationId")
-                }
-                is SecureResult.Failure -> {
-                    Logger.w(TAG, "Invitation creation failed, creating stub: ${invitationResult.error}")
-                    createStubContact(displayName, conversationId = UUID.randomUUID().toString())
                 }
             }
         }
-    }
-
-    /** Accept an incoming invitation link. */
-    fun acceptInvitation(invitationLink: String, displayName: String) {
-        viewModelScope.launch(dispatchers.io) {
-            _uiState.update { it.copy(isCreatingInvite = true, error = null) }
-            createStubContact(displayName, conversationId = UUID.randomUUID().toString())
-            _uiState.update { it.copy(isCreatingInvite = false) }
-        }
-    }
-
-    private suspend fun createStubContact(displayName: String, conversationId: String) {
-        val contact = ContactEntity(
-            id = UUID.randomUUID().toString(),
-            displayName = displayName,
-            publicKeyFingerprint = "pending_key_exchange",
-            publicKeyBytes = ByteArray(0),
-            conversationId = conversationId,
-            createdAt = System.currentTimeMillis(),
-            verified = false
-        )
-        contactDao.insert(contact)
-        _uiState.update { it.copy(isCreatingInvite = false) }
     }
 
     fun retry() {
@@ -160,13 +130,13 @@ class ChatListViewModel(
         observeContacts()
     }
 
-    fun clearInvitation() {
-        _uiState.update { it.copy(currentInvitation = null) }
-    }
-
     fun markConversationRead(conversationId: String) {
         viewModelScope.launch(dispatchers.io) {
-            messageDao.markConversationRead(conversationId)
+            try {
+                messageDao.markConversationRead(conversationId)
+            } catch (e: Exception) {
+                Logger.e(TAG, "Failed to mark conversation read", e)
+            }
         }
     }
 }

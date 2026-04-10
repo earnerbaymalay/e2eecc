@@ -5,12 +5,12 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.cypherchat.core.common.Logger
-import com.cypherchat.core.crypto.KeyStoreManager
 import com.cypherchat.core.database.dao.ContactDao
 import com.cypherchat.core.database.dao.MessageDao
 import com.cypherchat.core.database.entity.ContactEntity
 import com.cypherchat.core.database.entity.MessageEntity
 import net.sqlcipher.database.SupportFactory
+import java.security.SecureRandom
 
 private const val TAG = "AppDatabase"
 private const val DB_NAME = "cypherchat.db"
@@ -18,17 +18,15 @@ private const val DB_NAME = "cypherchat.db"
 /**
  * SQLCipher-encrypted Room database.
  *
- * The encryption key is generated and stored in the Android Keystore (hardware-backed
- * where available). The key is used to derive a 32-byte SQLCipher passphrase; the
- * passphrase is zeroed from memory after opening the database.
+ * A random 32-byte passphrase is generated on first launch and persisted in SharedPreferences.
+ * The database file is encrypted at rest with AES-256-CBC (SQLCipher default).
  *
- * SECURITY: The database file is encrypted at rest with AES-256-CBC (SQLCipher default).
- * Combined with the Android Keystore key management, the database cannot be read
- * without the device Keystore — i.e. data is tied to this device and user.
+ * SECURITY: The database cannot be read without the SharedPreferences file.
+ * For hardware-backed Keystore message encryption, see KeyStoreManager.
  */
 @Database(
-    entities  = [MessageEntity::class, ContactEntity::class],
-    version   = 1,
+    entities = [MessageEntity::class, ContactEntity::class],
+    version = 1,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -47,60 +45,42 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         private fun build(context: Context): AppDatabase {
-            // Retrieve the Keystore-managed AES key to derive the SQLCipher passphrase.
-            // We use the raw key bytes as the passphrase; SQLCipher derives its internal
-            // key from this using PBKDF2 (iterations configured in SQLCipher).
-            val keystoreKey = KeyStoreManager.getDatabaseKey()
-                .getOrNull()
-                ?: error("Failed to obtain database key from Keystore")
-
-            // Derive 32-byte passphrase from the Keystore key's encoded form.
-            // Note: SecretKey.encoded returns null for Keystore-bound keys on many devices.
-            // For Keystore-bound keys, we use the key to encrypt a fixed nonce and use
-            // that as the passphrase — ensuring the passphrase is device-bound.
-            val passphrase = derivePassphraseFromKeystoreKey(context, keystoreKey)
+            // Get or generate a stable 32-byte passphrase.
+            // Stored in SharedPreferences — DB is still SQLCipher-encrypted at rest.
+            val passphrase = getOrCreatePassphrase(context)
 
             return try {
-                Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, DB_NAME)
+                Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    DB_NAME
+                )
                     .openHelperFactory(SupportFactory(passphrase))
-                    .fallbackToDestructiveMigration()   // Replace with proper migrations before release
+                    .fallbackToDestructiveMigration()
                     .build()
             } finally {
-                passphrase.fill(0)  // Zero passphrase immediately after use
+                passphrase.fill(0)
                 Logger.d(TAG, "Database opened, passphrase zeroed")
             }
         }
 
         /**
-         * Derives a stable 32-byte passphrase for this device by encrypting a fixed
-         * known value with the Keystore key. The ciphertext (first 32 bytes) is
-         * deterministic per-device but cannot be reproduced without the Keystore key.
-         *
-         * Note: For devices where SecretKey.encoded is available (software Keystore),
-         * the raw key bytes are used directly for better performance.
+         * Retrieves a persisted passphrase or generates a new random one.
+         * Generated once per install, stable across app restarts.
          */
-        private fun derivePassphraseFromKeystoreKey(
-            context: Context,
-            key: javax.crypto.SecretKey
-        ): ByteArray {
-            val raw = key.encoded
-            if (raw != null && raw.size >= 32) {
-                return raw.copyOf(32)
+        private fun getOrCreatePassphrase(context: Context): ByteArray {
+            val prefs = context.getSharedPreferences("cypherchat_db", Context.MODE_PRIVATE)
+            val existing = prefs.getString("db_passphrase", null)
+            if (existing != null) {
+                return android.util.Base64.decode(existing, android.util.Base64.DEFAULT)
             }
 
-            // Hardware-bound key: use a stable device identifier as input
-            val deviceId = android.provider.Settings.Secure.getString(
-                context.contentResolver,
-                android.provider.Settings.Secure.ANDROID_ID
-            ) ?: "cypherchat-default-db-seed"
-
-            val encrypted = com.cypherchat.core.crypto.AesGcmCipher
-                .encrypt(deviceId.toByteArray(), key, "db_passphrase_derivation".toByteArray())
-                .getOrNull()
-                ?: error("Failed to derive passphrase")
-
-            // Use first 32 bytes of the encrypted output as the passphrase
-            return encrypted.copyOf(32)
+            // Generate new random 32-byte passphrase
+            val passphrase = ByteArray(32).also { SecureRandom().nextBytes(it) }
+            val encoded = android.util.Base64.encodeToString(passphrase, android.util.Base64.DEFAULT)
+            prefs.edit().putString("db_passphrase", encoded).apply()
+            Logger.d(TAG, "Generated new database passphrase")
+            return passphrase
         }
     }
 }

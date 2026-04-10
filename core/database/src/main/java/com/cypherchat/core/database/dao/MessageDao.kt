@@ -14,11 +14,6 @@ data class LastMessagePreview(
     @ColumnInfo(name = "previewText") val previewText: String
 )
 
-data class UnreadCount(
-    @ColumnInfo(name = "conversation_id") val conversationId: String,
-    @ColumnInfo(name = "count") val count: Long
-)
-
 @Dao
 interface MessageDao {
 
@@ -45,19 +40,6 @@ interface MessageDao {
 
     @Query("UPDATE messages SET read = 1 WHERE conversation_id = :conversationId")
     suspend fun markConversationRead(conversationId: String)
-
-    @Query("SELECT COUNT(*) FROM messages WHERE conversation_id = :conversationId AND read = 0 AND is_outgoing = 0")
-    fun unreadCount(conversationId: String): Flow<Int>
-
-    @Query(
-        """
-        SELECT conversation_id, COUNT(*) as count
-        FROM messages
-        WHERE read = 0 AND is_outgoing = 0
-        GROUP BY conversation_id
-        """
-    )
-    fun observeAllUnreadCounts(): Flow<List<UnreadCount>>
 
     @Query("DELETE FROM messages WHERE conversation_id = :conversationId")
     suspend fun deleteConversation(conversationId: String)
