@@ -1,13 +1,9 @@
+// STUB: NOT IMPLEMENTED
 package com.cypherchat.core.network
 
-import com.cypherchat.core.common.CypherError
 import com.cypherchat.core.common.SecureResult
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 
 /**
  * SimpleX Transport Implementation
@@ -22,124 +18,41 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 class SimplexTransportImpl : SimplexTransport {
 
-    private val _state = MutableStateFlow(TransportState.DISCONNECTED)
-    override val state: Flow<TransportState> = _state.asStateFlow()
-
-    private val _incomingMessages = MutableSharedFlow<IncomingEnvelope>(
-        replay = 0,
-        extraBufferCapacity = 100,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-    private val _invitations = MutableSharedFlow<SimplexInvitation>(replay = 10)
-
-    private val connections = mutableMapOf<String, SimplexConnection>()
+    override val state: Flow<TransportState> = emptyFlow()
 
     override suspend fun connect(endpoint: SimplexEndpointConfig): SecureResult<Unit> {
-        return try {
-            _state.value = TransportState.CONNECTING
-            
-            // In production: Initialize SimpleX CLI/SDK connection
-            // For now: Mark as connected (transport layer ready)
-            _state.value = TransportState.CONNECTED
-            
-            SecureResult.Success(Unit)
-        } catch (e: Exception) {
-            _state.value = TransportState.ERROR
-            SecureResult.Failure(CypherError.NetworkError("Connection failed: ${e.message}"))
-        }
+        throw NotImplementedError(
+            "SimplexTransport: network layer not implemented. " +
+            "Relay connection cannot be established. Do not ship without implementing this."
+        )
     }
 
     override suspend fun disconnect() {
-        connections.clear()
-        _state.value = TransportState.DISCONNECTED
+        // No-op for stub
     }
 
     override suspend fun createInvitation(): SecureResult<SimplexInvitation> {
-        return try {
-            // Generate a unique queue address for the invitation
-            val queueAddress = generateQueueAddress()
-            val publicKey = crypto.generatePublicKey()
-            
-            val invitation = SimplexInvitation(
-                queueAddress = queueAddress,
-                publicKey = publicKey,
-                relayUrl = "smp://relay.simplex.im"
-            )
-
-            SecureResult.Success(invitation)
-        } catch (e: Exception) {
-            SecureResult.Failure(CypherError.NetworkError("Invitation creation failed: ${e.message}"))
-        }
+        throw NotImplementedError(
+            "SimplexTransport: network layer not implemented. " +
+            "Invitations cannot be created. Do not ship without implementing this."
+        )
     }
 
     override suspend fun acceptInvitation(invitation: SimplexInvitation): SecureResult<SimplexConnection> {
-        return try {
-            val connectionId = "conn_${System.currentTimeMillis()}"
-            
-            val connection = SimplexConnection(
-                connectionId = connectionId,
-                peerPublicKey = invitation.publicKey
-            )
-
-            connections[connectionId] = connection
-            _state.value = TransportState.CONNECTED
-
-            SecureResult.Success(connection)
-        } catch (e: Exception) {
-            SecureResult.Failure(CypherError.NetworkError("Invitation acceptance failed: ${e.message}"))
-        }
+        throw NotImplementedError(
+            "SimplexTransport: network layer not implemented. " +
+            "Invitations cannot be accepted. Do not ship without implementing this."
+        )
     }
 
     override suspend fun sendMessage(connection: SimplexConnection, envelope: ByteArray): SecureResult<Unit> {
-        return try {
-            val conn = connections[connection.connectionId]
-                ?: return SecureResult.Failure(CypherError.NetworkError("Unknown connection: ${connection.connectionId}"))
-
-            // In production: Send via SimpleX SDK
-            // For now: Store locally and simulate delivery
-            
-            // Simulate receiving the message on the other side (loopback for testing)
-            _incomingMessages.tryEmit(
-                IncomingEnvelope(
-                    connectionId = connection.connectionId,
-                    envelope = envelope
-                )
-            )
-
-            SecureResult.Success(Unit)
-        } catch (e: Exception) {
-            SecureResult.Failure(CypherError.NetworkError("Send failed: ${e.message}"))
-        }
+        throw NotImplementedError(
+            "SimplexTransport: network layer not implemented. " +
+            "Messages cannot be transmitted. Do not ship without implementing this."
+        )
     }
 
     override fun receiveMessages(): Flow<IncomingEnvelope> {
-        return _incomingMessages.asSharedFlow()
-    }
-
-    // Helper functions
-
-    private fun generateQueueAddress(): String {
-        val chars = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-        return (1..40).map { chars.random() }.joinToString("")
-    }
-
-    /**
-     * Inject a test message for development/testing.
-     * In production, this would be handled by the SimpleX SDK callback.
-     */
-    suspend fun injectTestMessage(connectionId: String, envelope: ByteArray) {
-        _incomingMessages.tryEmit(
-            IncomingEnvelope(
-                connectionId = connectionId,
-                envelope = envelope
-            )
-        )
-    }
-}
-
-object crypto {
-    fun generatePublicKey(): ByteArray {
-        // Placeholder: In production, derive from actual crypto module
-        return ByteArray(32) { (it * 7).toByte() }
+        return emptyFlow()
     }
 }
