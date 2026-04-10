@@ -239,11 +239,12 @@ private fun ChatRow(contact: ContactUi, lastMessage: String, unreadCount: Int, o
 
 private fun formatTimestamp(timestamp: Long): String {
     val now = System.currentTimeMillis()
-    val diff = now - timestamp
+    val diff = if (timestamp > 0) now - timestamp else Long.MAX_VALUE
     return when {
         diff < 60_000 -> "now"
         diff < 3600_000 -> "${diff / 60_000}m"
         diff < 86400_000 -> "${diff / 3600_000}h"
+        diff > 30_000_000_000L -> ""
         else -> android.text.format.DateFormat.format("MMM d", timestamp).toString()
     }
 }

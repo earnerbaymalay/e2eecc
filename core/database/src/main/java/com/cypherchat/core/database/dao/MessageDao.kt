@@ -16,7 +16,7 @@ data class LastMessagePreview(
 
 data class UnreadCount(
     @ColumnInfo(name = "conversation_id") val conversationId: String,
-    @ColumnInfo(name = "count") val count: Int
+    @ColumnInfo(name = "count") val count: Long
 )
 
 @Dao

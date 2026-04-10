@@ -19,7 +19,10 @@ private object Routes {
 }
 
 @Composable
-fun CypherchatNavigation(startAtChatList: Boolean = false) {
+fun CypherchatNavigation(
+    startAtChatList: Boolean = false,
+    onOnboardingComplete: () -> Unit = {}
+) {
     val nav = rememberNavController()
 
     NavHost(
@@ -29,7 +32,7 @@ fun CypherchatNavigation(startAtChatList: Boolean = false) {
 
         composable(Routes.ONBOARDING) {
             OnboardingScreen(onComplete = {
-                (nav.context as? MainActivity)?.markOnboardingComplete()
+                onOnboardingComplete()
                 nav.navigate(Routes.CHAT_LIST) {
                     popUpTo(Routes.ONBOARDING) { inclusive = true }
                 }

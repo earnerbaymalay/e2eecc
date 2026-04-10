@@ -25,13 +25,16 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val hasCompletedOnboarding = prefs.getBoolean("onboarding_completed", false)
-                    CypherchatNavigation(startAtChatList = hasCompletedOnboarding)
+                    CypherchatNavigation(
+                        startAtChatList = hasCompletedOnboarding,
+                        onOnboardingComplete = { markOnboardingComplete() }
+                    )
                 }
             }
         }
     }
 
-    fun markOnboardingComplete() {
+    private fun markOnboardingComplete() {
         prefs.edit().putBoolean("onboarding_completed", true).apply()
     }
 }

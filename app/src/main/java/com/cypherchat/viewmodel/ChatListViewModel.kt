@@ -35,7 +35,6 @@ data class ContactUi(
     val lastSeen: Long,
     val initial: String
 ) {
-    fun lastActiveAt(): Long = lastSeen.takeIf { it > 0 } ?: System.currentTimeMillis()
 }
 
 class ChatListViewModel(
@@ -71,7 +70,7 @@ class ChatListViewModel(
                 }
 
                 val previews = lastMsgs.associate { it.conversationId to it.previewText }
-                val unreadCounts = unreadList.associate { it.conversationId to it.count }
+                val unreadCounts = unreadList.associate { it.conversationId to it.count.toInt() }
 
                 ChatListUiState(
                     contacts = contactUis,
