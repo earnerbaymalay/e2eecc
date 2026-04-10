@@ -76,8 +76,8 @@ dependencies {
     implementation(project(":core:network"))
 
     // Room (needed to access RoomDatabase supertype)
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit.ext)
