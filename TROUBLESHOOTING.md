@@ -57,7 +57,7 @@
 
 - **[📖 Read the Usage Guide](docs/USAGE.md)** for detailed instructions on installation, starting conversations, and security best practices.
 - **[📲 Visit Sideload Hub](https://earnerbaymalay.github.io/sideload/)** for alternative installation methods and iPhone PWA access.
-- **[🐛 Report a Bug](https://github.com/earnerbaymalay/cyph3rchat/issues)** on GitHub with device details, Android version, logcat output, and steps to reproduce.
+- **[🐛 Report a Bug](https://github.com/earnerbaymalay/e2eecc/issues)** on GitHub with device details, Android version, logcat output, and steps to reproduce.
 
 ---
 

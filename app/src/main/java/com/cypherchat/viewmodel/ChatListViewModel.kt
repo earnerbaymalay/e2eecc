@@ -34,7 +34,9 @@ data class ContactUi(
     val verified: Boolean,
     val lastSeen: Long,
     val initial: String
-)
+) {
+    fun lastActiveAt(): Long = lastSeen.takeIf { it > 0 } ?: System.currentTimeMillis()
+}
 
 class ChatListViewModel(
     private val contactDao: ContactDao,
@@ -54,8 +56,9 @@ class ChatListViewModel(
         viewModelScope.launch(dispatchers.io) {
             combine(
                 contactDao.observeAll(),
-                messageDao.observeAllLastMessages()
-            ) { contacts, lastMsgs ->
+                messageDao.observeAllLastMessages(),
+                messageDao.observeAllUnreadCounts()
+            ) { contacts, lastMsgs, unreadList ->
                 val contactUis = contacts.map { c ->
                     ContactUi(
                         id = c.id,
@@ -68,37 +71,40 @@ class ChatListViewModel(
                 }
 
                 val previews = lastMsgs.associate { it.conversationId to it.previewText }
+                val unreadCounts = unreadList.associate { it.conversationId to it.count }
 
                 ChatListUiState(
                     contacts = contactUis,
                     lastMessages = previews,
+                    unreadCounts = unreadCounts,
                     isLoading = false,
                     currentInvitation = _uiState.value.currentInvitation,
                     isCreatingInvite = _uiState.value.isCreatingInvite
                 )
+            }.catch { e ->
+                _uiState.update { it.copy(isLoading = false, error = "Failed to load contacts: ${e.message}") }
             }.collect { state ->
                 _uiState.value = state
             }
         }
     }
 
-    /**
-     * Create a new contact with SimpleX invitation.
-     * Generates an invitation link that can be shared.
-     */
+    /** Create a new contact with SimpleX invitation. */
+    fun createNewConversation() {
+        createNewConversation("New Contact")
+    }
+
     fun createNewConversation(displayName: String) {
         viewModelScope.launch(dispatchers.io) {
             _uiState.update { it.copy(isCreatingInvite = true, error = null) }
 
-            // Create SimpleX invitation
             val invitationResult = transport.createInvitation()
-            
+
             when (invitationResult) {
                 is SecureResult.Success -> {
                     val invitation = invitationResult.value
                     val conversationId = UUID.randomUUID().toString()
-                    
-                    // Create contact with invitation data
+
                     val contact = ContactEntity(
                         id = UUID.randomUUID().toString(),
                         displayName = displayName,
@@ -120,7 +126,6 @@ class ChatListViewModel(
                     Logger.d(TAG, "Created invitation for $displayName: $conversationId")
                 }
                 is SecureResult.Failure -> {
-                    // Fallback: create without invitation (alpha mode)
                     Logger.w(TAG, "Invitation creation failed, creating stub: ${invitationResult.error}")
                     createStubContact(displayName, conversationId = UUID.randomUUID().toString())
                 }
@@ -128,25 +133,15 @@ class ChatListViewModel(
         }
     }
 
-    /**
-     * Accept an incoming invitation link.
-     */
+    /** Accept an incoming invitation link. */
     fun acceptInvitation(invitationLink: String, displayName: String) {
         viewModelScope.launch(dispatchers.io) {
             _uiState.update { it.copy(isCreatingInvite = true, error = null) }
-
-            // TODO: Parse invitation link and accept via transport
-            // For now: Create contact from link data
             createStubContact(displayName, conversationId = UUID.randomUUID().toString())
-            
             _uiState.update { it.copy(isCreatingInvite = false) }
-            Logger.d(TAG, "Accepted invitation from link")
         }
     }
 
-    /**
-     * Create a stub contact (fallback when invitation system isn't available).
-     */
     private suspend fun createStubContact(displayName: String, conversationId: String) {
         val contact = ContactEntity(
             id = UUID.randomUUID().toString(),
@@ -159,7 +154,11 @@ class ChatListViewModel(
         )
         contactDao.insert(contact)
         _uiState.update { it.copy(isCreatingInvite = false) }
-        Logger.d(TAG, "Created stub contact: $displayName")
+    }
+
+    fun retry() {
+        _uiState.update { it.copy(error = null, isLoading = true) }
+        observeContacts()
     }
 
     fun clearInvitation() {

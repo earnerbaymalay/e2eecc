@@ -11,21 +11,25 @@ import com.cypherchat.ui.screen.ConversationScreen
 import com.cypherchat.ui.screen.OnboardingScreen
 
 private object Routes {
-    const val ONBOARDING   = "onboarding"
-    const val CHAT_LIST    = "chats"
+    const val ONBOARDING = "onboarding"
+    const val CHAT_LIST = "chats"
     const val CONVERSATION = "conversation/{conversationId}"
 
     fun conversation(id: String) = "conversation/$id"
 }
 
 @Composable
-fun CypherchatNavigation() {
+fun CypherchatNavigation(startAtChatList: Boolean = false) {
     val nav = rememberNavController()
 
-    NavHost(navController = nav, startDestination = Routes.ONBOARDING) {
+    NavHost(
+        navController = nav,
+        startDestination = if (startAtChatList) Routes.CHAT_LIST else Routes.ONBOARDING
+    ) {
 
         composable(Routes.ONBOARDING) {
             OnboardingScreen(onComplete = {
+                (nav.context as? MainActivity)?.markOnboardingComplete()
                 nav.navigate(Routes.CHAT_LIST) {
                     popUpTo(Routes.ONBOARDING) { inclusive = true }
                 }
@@ -39,13 +43,14 @@ fun CypherchatNavigation() {
         }
 
         composable(
-            route     = Routes.CONVERSATION,
+            route = Routes.CONVERSATION,
             arguments = listOf(navArgument("conversationId") { type = NavType.StringType })
         ) { backStackEntry ->
-            val conversationId = backStackEntry.arguments?.getString("conversationId") ?: return@composable
+            val conversationId = backStackEntry.arguments?.getString("conversationId")
+                ?: return@composable
             ConversationScreen(
                 conversationId = conversationId,
-                onBack         = { nav.popBackStack() }
+                onBack = { nav.popBackStack() }
             )
         }
     }

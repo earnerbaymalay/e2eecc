@@ -14,6 +14,11 @@ data class LastMessagePreview(
     @ColumnInfo(name = "previewText") val previewText: String
 )
 
+data class UnreadCount(
+    @ColumnInfo(name = "conversation_id") val conversationId: String,
+    @ColumnInfo(name = "count") val count: Int
+)
+
 @Dao
 interface MessageDao {
 
@@ -44,6 +49,16 @@ interface MessageDao {
     @Query("SELECT COUNT(*) FROM messages WHERE conversation_id = :conversationId AND read = 0 AND is_outgoing = 0")
     fun unreadCount(conversationId: String): Flow<Int>
 
+    @Query(
+        """
+        SELECT conversation_id, COUNT(*) as count
+        FROM messages
+        WHERE read = 0 AND is_outgoing = 0
+        GROUP BY conversation_id
+        """
+    )
+    fun observeAllUnreadCounts(): Flow<List<UnreadCount>>
+
     @Query("DELETE FROM messages WHERE conversation_id = :conversationId")
     suspend fun deleteConversation(conversationId: String)
 
@@ -52,14 +67,14 @@ interface MessageDao {
 
     @Query(
         """
-        SELECT conversation_id, 
-               CASE 
+        SELECT conversation_id,
+               CASE
                    WHEN is_outgoing = 1 THEN '✓ ' || substr(encrypted_content, 1, 50)
                    ELSE substr(encrypted_content, 1, 50)
                END as previewText
         FROM messages m1
         WHERE timestamp = (
-            SELECT MAX(timestamp) FROM messages m2 
+            SELECT MAX(timestamp) FROM messages m2
             WHERE m2.conversation_id = m1.conversation_id
         )
         ORDER BY timestamp DESC

@@ -16,6 +16,8 @@ val CipherTealSoft = Color(0xFF00D4AA26) // 15% alpha
 val CipherAmber    = Color(0xFFFFA500)   // Warning / unverified
 val CipherRed      = Color(0xFFFF4757)   // Error / destructive
 val CipherGreen    = Color(0xFF2ED573)   // Delivered / verified
+val CipherOrange   = Color(0xFFFF8C00)   // Warning indicators
+val CipherErrorBg  = Color(0xFFFF475715) // 8% error bg
 
 val TextPrimary    = Color(0xFFE8EAF0)
 val TextSecondary  = Color(0xFF8B93A8)

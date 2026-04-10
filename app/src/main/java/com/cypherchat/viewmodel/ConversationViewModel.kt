@@ -39,7 +39,8 @@ data class ConversationUiState(
     val isLoading: Boolean = true,
     val error: String? = null,
     val isSending: Boolean = false,
-    val connectionStatus: String = "Connected"
+    val connectionStatus: String = "Connected",
+    val keyFingerprint: String = ""
 )
 
 class ConversationViewModel(
@@ -90,6 +91,7 @@ class ConversationViewModel(
                 _uiState.update {
                     it.copy(
                         contactName = contact.displayName,
+                        keyFingerprint = contact.publicKeyFingerprint,
                         verified = contact.verified
                     )
                 }
@@ -263,9 +265,29 @@ class ConversationViewModel(
     }
 
     fun markRead() {
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
         viewModelScope.launch(dispatchers.io) {
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
             messageDao.markConversationRead(conversationId)
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
         }
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
     }
 
     /**
