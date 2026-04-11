@@ -42,9 +42,6 @@ object HkdfDerivation {
             SecureResult.Success(expand(prk, info, outputLength))
         } catch (e: Exception) {
             SecureResult.Failure(CypherError.CryptoError("HKDF derivation failed", e))
-        } finally {
-            // Zero the input key material after derivation
-            inputKeyMaterial.fill(0)
         }
     }
 

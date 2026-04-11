@@ -132,7 +132,6 @@ data class DoubleRatchetState(
                 outputLength = 32
             ).getOrNull() ?: throw IllegalStateException("HKDF msg failed")
 
-            chainKey.fill(0)
             return newChainKey to msgKey
         }
 
